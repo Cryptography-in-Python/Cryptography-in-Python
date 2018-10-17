@@ -5,6 +5,7 @@ from bitarray import bitarray
 def rotate_left(val, r_bits, max_bits=16):
     '''
     cicular shift to left for r_bits
+    from https://www.falatic.com/index.php/108/python-and-bitwise-rotation
     '''
     return (val << r_bits % max_bits) & (2 ** max_bits - 1) | \
     ((val & (2 ** max_bits - 1)) >> (max_bits -(r_bits % max_bits)))
@@ -12,6 +13,7 @@ def rotate_left(val, r_bits, max_bits=16):
 def rotate_right(val, r_bits, max_bits=16):
     '''
     cicular shift to right for r_bits
+    from https://www.falatic.com/index.php/108/python-and-bitwise-rotation
     '''
     return ((val & (2 ** max_bits - 1)) >> r_bits % max_bits) | \
     (val << (max_bits -(r_bits % max_bits)) & (2 ** max_bits - 1))
