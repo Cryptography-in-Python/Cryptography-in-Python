@@ -1,3 +1,4 @@
+import base64
 
 from bitarray import bitarray
 
@@ -24,6 +25,8 @@ class CryptographyDES(CryptographyBase):
         if "_subkeys" not in self.__dict__:
             raise ValueError("A user defined key needs to be provided")
 
+        print("Pre-Process Length:", len(self._plain_text)) # debug
+        
         _inputs = split_data_to_every_n_bits(self._plain_text, CryptographyDES.BLOCK_SIZE)
         _encrypt_output = bitarray()
 
@@ -109,8 +112,13 @@ if __name__ == "__main__":
 
     des_instance = CryptographyDES()
     des_instance.set_plain_text(message)
-    print(des_instance.get_plain_text())
     des_instance.set_key("Ikuta")
     des_instance.encrypt()
+    encrypted = des_instance.get_cipher_text()
 
-    print(des_instance.get_cipher_text().tobytes().hex())
+    correct_answer = "U2FsdGVkX1+TMzIEAQDZqzaU2we2ce8dO6IIvg6CTBU="
+    correct_answer_in_bit = bitarray()
+    correct_answer_in_bit.frombytes(correct_answer.encode('utf-8'))
+
+    print(len(correct_answer_in_bit))
+    print(len(encrypted))
