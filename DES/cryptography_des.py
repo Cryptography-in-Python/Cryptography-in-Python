@@ -1,8 +1,7 @@
 from bitarray import bitarray
 
-from cryptography_abstract import CryptographyBase
-from des_misc              import *
-from misc                  import *
+from .des_misc                    import *
+from ..base.cryptography_abstract import CryptographyBase
 
 class CryptographyDES(CryptographyBase):
 

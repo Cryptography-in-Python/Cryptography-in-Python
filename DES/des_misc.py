@@ -1,7 +1,7 @@
 import numpy as np
 from bitarray import bitarray
 
-from misc import *
+from ..base.misc import *
 
 _initial_permutation_table = \
 [
