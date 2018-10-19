@@ -28,7 +28,7 @@ class CryptographyBase(ABC):
         raise NotImplementedError("It is an abstract method")
 
     @abstractmethod
-    def set_key(self) -> str:
+    def set_key(self, key='') -> str:
         raise NotImplementedError("It is an abstract method")
 
     @abstractmethod
