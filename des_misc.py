@@ -197,7 +197,7 @@ def f_function(plain_text_slice:bitarray, part_of_key:bitarray) -> bitarray:
     
     return final_result
 
-def generate_subkeys(key:bitarray) -> [bitarray]:
+def generate_subkeys(key:bitarray, decrypt=False) -> [bitarray]:
     '''
     generate 16 round keys
     '''

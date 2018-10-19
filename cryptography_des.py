@@ -1,5 +1,3 @@
-import base64
-
 from bitarray import bitarray
 
 from cryptography_abstract import CryptographyBase
@@ -26,7 +24,7 @@ class CryptographyDES(CryptographyBase):
             raise ValueError("A user defined key needs to be provided")
 
         print("Pre-Process Length:", len(self._plain_text)) # debug
-        
+
         _inputs = split_data_to_every_n_bits(self._plain_text, CryptographyDES.BLOCK_SIZE)
         _encrypt_output = bitarray()
 
@@ -54,7 +52,18 @@ class CryptographyDES(CryptographyBase):
         self._cipher_text = _encrypt_output
 
     def decrypt(self):
-        pass
+        _inputs = split_data_to_every_n_bits(self._cipher_text, CryptographyDES.BLOCK_SIZE)
+        _decrypt_output = bitarray()
+
+        decrypt_keys = self._subkeys[::-1]
+
+        for input_block in _inputs:
+            left_hand  = input_block[:CryptographyDES.HALF_BLOCK]
+            right_hand = input_block[CryptographyDES.HALF_BLOCK:]
+
+
+        # self._cipher_text = _encrypt_output
+
 
     def set_plain_text(self, plain_text='') -> None:
         if isinstance(plain_text, str):
@@ -108,17 +117,16 @@ class CryptographyDES(CryptographyBase):
 
 
 if __name__ == "__main__":
-    message = "Nogizaka46"
+    message = "Nogizaka"
 
     des_instance = CryptographyDES()
     des_instance.set_plain_text(message)
-    des_instance.set_key("Ikuta")
+    des_instance.set_key("Ikuta\0\0\0")
     des_instance.encrypt()
     encrypted = des_instance.get_cipher_text()
 
-    correct_answer = "U2FsdGVkX1+TMzIEAQDZqzaU2we2ce8dO6IIvg6CTBU="
-    correct_answer_in_bit = bitarray()
-    correct_answer_in_bit.frombytes(correct_answer.encode('utf-8'))
-
-    print(len(correct_answer_in_bit))
-    print(len(encrypted))
+    from Crypto.Cipher import DES
+    decryptor = DES.new('Ikuta\0\0\0')
+    ci = decryptor.encrypt(message)
+    plain = decryptor.decrypt(encrypted.tobytes())
+    print(plain)
