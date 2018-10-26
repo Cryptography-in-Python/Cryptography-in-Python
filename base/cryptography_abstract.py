@@ -6,8 +6,7 @@ class CryptographyBase(ABC):
     The base class for all the cryptography implementation
     '''
 
-    @classmethod
-    @abstractmethod
+    @abstractclassmethod
     def from_instance(cls, existed_instance):
         raise NotImplementedError("It is an abstract method")
 

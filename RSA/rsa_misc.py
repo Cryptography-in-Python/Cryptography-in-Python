@@ -49,11 +49,14 @@ def _miller_rabin_decompose(number:int) -> (int, int):
     raise ValueError("This number cannot be properly decomposed")
 
 def _atkin_sieve(limit:int) -> int:
+    '''
+    The Atkin Sieve to generate a list of prime numbers
+    https://en.wikipedia.org/wiki/Sieve_of_Atkin
+    '''
     if limit > 2:
         yield 2
     if limit > 3:
         yield 3
-
     is_prime = [False for _ in range(limit + 1)]
 
     for x in range(1, int(math.sqrt(limit)) + 1):
@@ -61,21 +64,21 @@ def _atkin_sieve(limit:int) -> int:
             
             if y % 2 == 1:
                 n = 4 * x ** 2 + y ** 2
-                if n <= limit and n % 60 in (1,13,17,29,37,41,49,53):
+                if n <= limit and n % 60 in (1, 13, 17, 29, 37, 41, 49, 53):
                     is_prime[n] = not is_prime[n]
 
             if x % 2 == 1 and y % 2 == 0:
                 n = 3 * x ** 2 + y ** 2
-                if n <= limit and n % 60 in (7,19,31,43):
+                if n <= limit and n % 60 in (7, 19, 31, 43):
                     is_prime[n] = not is_prime[n]
 
             n = 3 * x ** 2 - y ** 2
-            if x > y and n <= limit and n % 12 == 11:
+            if x > y and n <= limit and n % 60 in (11,23,47,59):
                 is_prime[n] = not is_prime[n]
 
-    for n in range(5,int(math.sqrt(limit))):
+    for n in range(5, int(math.sqrt(limit))):
         if is_prime[n]:
-            for k in range(n**2,limit+1,n**2):
+            for k in range(n ** 2, limit + 1, n ** 2):
                 is_prime[k] = False
 
     for n in range(5, limit):
@@ -90,4 +93,4 @@ def _is_prime(number:int):
         return number == results[-1]
 
 if __name__ == "__main__":
-    print(_is_prime(50033))
+    print(_is_prime(70039))
