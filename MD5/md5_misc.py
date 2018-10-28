@@ -1,3 +1,8 @@
+'''
+Author: Yu Mi
+Supportive functions and values for MD5 hashing, may not be used since some of them
+are included in MD5 class as private members.
+'''
 import numpy as np
 from bitarray       import bitarray
 from ..base.misc    import *
@@ -14,8 +19,3 @@ def _LINEAR_F(X,Y,Z):
     _Z = number_to_bitarray(Z)
 
     return bitarray_to_number(_X&_Y)|((~_X)&_Z)
-    
-    
-    
-    
-

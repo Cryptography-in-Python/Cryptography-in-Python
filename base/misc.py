@@ -62,7 +62,22 @@ def split_data_to_every_n_bits(bit_array:bitarray, slice_size:int):
         current_ptr += slice_size
 
 def number_to_bitarray(number:int) -> bitarray:
-    return bitarray(bin(number)[2:]);
+    return bitarray(bin(number)[2:])
 
 def bitarray_to_number(bitarr:bitarray) -> int:
-    return int((bitarr).to01(),base=2);
+    return int((bitarr).to01(),base=2)
+
+def hexdigest(number:int)-> str:
+    ''' returns hex form of an integer value, for example:
+    >>>hexdigest(65535)
+    'FFFF'
+    NOTE: this function only takes int, you may need to call it mutiple times when
+    dealing with larger numbers
+    '''
+    temp = '';
+    while number >0:
+        this_num = number %16
+        number = int(number /16)
+        this_hex = hex(this_num)
+        temp = this_hex[2].upper() + temp 
+    return temp
