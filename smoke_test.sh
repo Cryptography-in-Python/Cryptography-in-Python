@@ -1,5 +1,3 @@
-cd ..
-
 function DES(){
     python3 -m cryptography.DES.cryptography_des
     return $?
