@@ -123,9 +123,3 @@ if __name__ == "__main__":
     des_instance.set_key("Ikuta\0\0\0")
     des_instance.encrypt()
     encrypted = des_instance.get_cipher_text()
-
-    from Crypto.Cipher import DES
-    decryptor = DES.new('Ikuta\0\0\0')
-    ci = decryptor.encrypt(message)
-    plain = decryptor.decrypt(encrypted.tobytes())
-    print(plain)
