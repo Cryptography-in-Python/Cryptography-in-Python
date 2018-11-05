@@ -47,6 +47,40 @@ class CryptographyMD5(CryptographyBase):
         r = r & 0xffffffff
         r = r + b
         return r & 0xffffffff # <- to make r unsigned
+
+    def __pad(self,message):
+        ''' First step of hashing, pad 1 and length to the end of message'''
+        padded = ''
+        messageLength = len(message)
+
+        message += '1' # append 1 to mark end of message
+
+        while (len(message)%512!=448):
+            message += '0' 
+        #bring the length of the message up to 64 bits fewer than a multiple of 512
+
+        return message + self.__padlength(messageLength)
+        # rewrite message with 1 and the ending length
+
+    def __padlength(self,length):
+        ''' The remaining bits are filled up with 64 bits representing 
+            the length of the original message, modulo 2^64'''
+        binLength = bin(length)[2:]
+        if (len(binLength)>64):
+            return binLength[len(binLength)-64:]
+        else:
+            return ''.join([0 for i in range(64-len(binLength))])+binLength
+
+    def __splitIntoBlocks(self,message,n):
+        ''' This function is used to split the message into blocks according to the 
+        assigned length 'n' '''
+        return [message[i:i+n] for i in range(0,len(message),n)]
+
+    def __hash(self,message):
+        '''The main hashing function'''
+        messageLength = len(message.encode('utf-8'))
+
+
 ''' public methods'''
     def encrypt(self):
         
