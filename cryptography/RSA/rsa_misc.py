@@ -1,5 +1,13 @@
 import math
 import secrets
+import random
+import time
+
+_known_primes = [
+    2, 3
+]
+
+random.seed(time.time())
 
 def _rand_between(lower:int, upper:int) -> int:
     num = secrets.randbelow(upper)
@@ -13,6 +21,7 @@ def _miller_rabin(number:int, accuracy:int) -> bool:
     '''
     try:
         r, d = _miller_rabin_decompose(number)
+        print(r, d)
     except ValueError:
         print("Error")
         return False
@@ -37,60 +46,83 @@ def _miller_rabin_decompose(number:int) -> (int, int):
     '''
     a step in Miller-Rabin: decompose the number-1 to 2^n * d
     '''
-    n_value = 2
+    r = 0
+    d = number - 1
+    while d % 2 == 0:
+        d, r = d >> 1, r + 1
 
-    while 2 ** n_value < number - 1:
-        temp_d = (number - 1) / (2 ** n_value)
-        if temp_d.is_integer() and int(temp_d) % 2 == 1:
-            return n_value, int(temp_d)
-        else:
-            n_value += 1
+    return d, r
 
-    raise ValueError("This number cannot be properly decomposed")
+def _is_prime_from_miller_rabin(number:int):
+    return _miller_rabin(number, 10)
 
-def _atkin_sieve(limit:int) -> int:
+def _SPRP_is_composite(a, d, n, r):
     '''
-    The Atkin Sieve to generate a list of prime numbers
-    https://en.wikipedia.org/wiki/Sieve_of_Atkin
+    Referred from http://primes.utm.edu/prove/prove2_3.html
     '''
-    if limit > 2:
-        yield 2
-    if limit > 3:
-        yield 3
-    is_prime = [False for _ in range(limit + 1)]
-
-    for x in range(1, int(math.sqrt(limit)) + 1):
-        for y in range(1, int(math.sqrt(limit)) + 1):
-            
-            if y % 2 == 1:
-                n = 4 * x ** 2 + y ** 2
-                if n <= limit and n % 60 in (1, 13, 17, 29, 37, 41, 49, 53):
-                    is_prime[n] = not is_prime[n]
-
-            if x % 2 == 1 and y % 2 == 0:
-                n = 3 * x ** 2 + y ** 2
-                if n <= limit and n % 60 in (7, 19, 31, 43):
-                    is_prime[n] = not is_prime[n]
-
-            n = 3 * x ** 2 - y ** 2
-            if x > y and n <= limit and n % 60 in (11,23,47,59):
-                is_prime[n] = not is_prime[n]
-
-    for n in range(5, int(math.sqrt(limit))):
-        if is_prime[n]:
-            for k in range(n ** 2, limit + 1, n ** 2):
-                is_prime[k] = False
-
-    for n in range(5, limit):
-        if is_prime[n]: 
-            yield n
-
-def _is_prime(number:int):
-    results = list(_atkin_sieve(number+1))
-    if not results: 
+    if pow(a, d, n) == 1:
         return False
-    else:
-        return number == results[-1]
+
+    for r in range(r):
+        if pow(a, 2 ** r * d, n) == n - 1:
+            return False
+    return True
+
+def _query_SPRP_table(d:int, n:int, r:int, precision:int) -> bool:
+    '''
+    Referred from http://primes.utm.edu/prove/prove2_3.html
+    '''
+    if n < 1373653: 
+        return not any(_SPRP_is_composite(a, d, n, r) for a in (2, 3))
+
+    if n < 25326001: 
+        return not any(_SPRP_is_composite(a, d, n, r) for a in (2, 3, 5))
+
+    if n < 118670087467: 
+        if n == 3215031751: 
+            return False
+            
+        return not any(_SPRP_is_composite(a, d, n, r) for a in (2, 3, 5, 7))
+
+    if n < 2152302898747: 
+        return not any(_SPRP_is_composite(a, d, n, r) for a in (2, 3, 5, 7, 11))
+
+    if n < 3474749660383: 
+        return not any(_SPRP_is_composite(a, d, n, r) for a in (2, 3, 5, 7, 11, 13))
+
+    if n < 341550071728321: 
+        return not any(_SPRP_is_composite(a, d, n, r) for a in (2, 3, 5, 7, 11, 13, 17))
+
+    return not any(_SPRP_is_composite(a, d, n, r) for a in _known_primes[:precision])
+ 
+def is_prime(n, _precision_for_huge_n=16) -> bool:
+    '''
+    Use Millar Rabin and SPRP to check whether
+    a number is primal
+    '''
+    if n in _known_primes or n in (0, 1):
+        return True
+
+    if any((n % p) == 0 for p in _known_primes):
+        return False
+
+    d, r = _miller_rabin_decompose(n)
+
+    return _query_SPRP_table(d, n, r, _precision_for_huge_n)
+
+def get_prime_number(bit_length=64) -> int:
+    '''
+    return a **VERY POSSIBLE** prime number with bit_length bits
+    '''
+    a_possible_number = random.getrandbits(bit_length)
+    a_possible_number |= 1
+
+    while not is_prime(a_possible_number):
+        a_possible_number = random.getrandbits(bit_length)
+        a_possible_number |= 1
+    
+    return a_possible_number
 
 if __name__ == "__main__":
-    print(_is_prime(70039))
+    print(get_prime_number(bit_length=128))
+
