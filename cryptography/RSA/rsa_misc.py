@@ -1,6 +1,11 @@
 import math
 import multiprocessing
-import secrets
+try:
+    import secrets
+    below = secrets.randbelow
+except ImportError:
+    import random
+    below = random.randrange
 import random
 import time
 
@@ -15,7 +20,7 @@ random.seed(time.time())
 def _rand_between(lower:int, upper:int) -> int:
     num = secrets.randbelow(upper)
     while num < lower:
-        num = secrets.randbelow(upper)
+        num = (upper)
     return num
 
 def _miller_rabin(number:int, accuracy:int) -> bool:
