@@ -5,7 +5,7 @@ while other functions and values would be supportive use.
 Reference:https://en.wikipedia.org/wiki/MD5
 '''
 
-DEBUG_FLAG = 1 # Change to 0 for release
+DEBUG_FLAG = 0 # Change to 0 for release
 MAX_BITS = 32 # Max bits of an integer, normally 32
 
 class CryptographyMD5():
@@ -168,10 +168,11 @@ class CryptographyMD5():
                 c = b
                 b = b + self.__leftrotate(F,self.__S[i])
 
-            self.__A = a
-            self.__B = b
-            self.__C = c
-            self.__D = d
+            # add masks to suppress upper bits
+            self.__A = a & 0xffffffff
+            self.__B = b & 0xffffffff
+            self.__C = c & 0xffffffff
+            self.__D = d & 0xffffffff
 
     def __digest(self, message):
         self.__hash(message)
@@ -205,5 +206,9 @@ if __name__ =='__main__':
     Create tests for this file
     '''
     md5 = CryptographyMD5()
-    digest = md5.encrypt("Have a nice day!")
+    digest = md5.encrypt("Have a nice day!!")
+    print(digest)
+    message = input('Please type the message you want to hash:')
+    md5 = CryptographyMD5()
+    digest = md5.encrypt(message)
     print(digest)
