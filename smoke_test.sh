@@ -4,8 +4,8 @@ function DES(){
 }
 
 function RSA(){
-    # python3 -m cryptography.RSA.cryptography_rsa
-    return 0
+    python3 -m cryptography.RSA.cryptography_rsa
+    return $?
 }
 
 function MD5(){
