@@ -4,20 +4,18 @@ Create a class to implement MD5 hashing, the real hashing function is in __hash,
 while other functions and values would be supportive use.
 Reference:https://en.wikipedia.org/wiki/MD5
 '''
-from ..base.cryptography_abstract	import CryptographyBase
-from ..base.misc 					import *
-from md5_misc						import *
+
 DEBUG_FLAG = 1 # Change to 0 for release
 MAX_BITS = 32 # Max bits of an integer, normally 32
 
-class CryptographyMD5(CryptographyBase):
+class CryptographyMD5():
 
     def __init__(self):
         # Some magic numbers used in MD5
-        self.__A = 0X67452301L
-        self.__B = 0XEFCDAB89L
-        self.__C = 0X98BADCFEL
-        self.__D = 0X10325476L
+        self.__A = 0X67452301
+        self.__B = 0XEFCDAB89
+        self.__C = 0X98BADCFE
+        self.__D = 0X10325476
         self.__K = [0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
                     0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,
                     0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be,
@@ -34,9 +32,16 @@ class CryptographyMD5(CryptographyBase):
                     0x655b59c3, 0x8f0ccc92, 0xffeff47d, 0x85845dd1,
                     0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
                     0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391]
-        pass;
+        self.__S = [7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,
+                    5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20,
+                    4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23,
+                    6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21]
 
-''' private methods'''
+## public methods
+    def encrypt(self,message):
+        return self.__digest(message)
+
+## private methods
     def __F(self,x,y,z):
         ''' linear function F'''
         return (x&y)|((~x)&z)
@@ -85,29 +90,120 @@ class CryptographyMD5(CryptographyBase):
         if (len(binLength)>64):
             return binLength[len(binLength)-64:]
         else:
-            return ''.join([0 for i in range(64-len(binLength))])+binLength
+            return ''.join(['0' for i in range(64-len(binLength))])+binLength
 
     def __splitIntoBlocks(self,message,n):
         ''' This function is used to split the message into blocks according to the 
         assigned length 'n' '''
         return [message[i:i+n] for i in range(0,len(message),n)]
 
+    def __splitIntoWords(self,message,messageLength,finalBlock):
+        ''' Split the chunks into 16 32-bit words'''
+        words = [0] * 16
+        splitted = self.__splitIntoBlocks(message,32)
+
+        wordIndex = 0
+        for word in splitted:
+            byte = self.__splitIntoBlocks(word,8)
+            temp = 0
+            power= 0
+
+            for byteTemp in byte:
+                temp = words[wordIndex]
+                temp = temp | int(byteTemp,2) << power
+                words[wordIndex] = temp
+
+            wordIndex += 1
+            power = 0
+
+        if finalBlock: # correct the last two bytes if on the last block
+            words[-2] = messageLength <<3
+            words[-1] = messageLength >>29
+
+        return words
+
+    def __toBinaryString(self,message):
+        ''' Converts a given string into a binary form'''
+        return ''.join("{:08b}".format(byte) 
+            for byte in bytearray(message.encode('utf-8')))
+
+    def __leftrotate(self,num,s):
+        return (num<<s)|(num>>(MAX_BITS-s))
+
     def __hash(self,message):
         '''The main hashing function'''
         messageLength = len(message.encode('utf-8'))
+        chunks = self.__splitIntoBlocks(
+                 self.__pad(
+                 self.__toBinaryString(message))
+                 ,512)
 
+        for chunk in chunks:
+            words = self.__splitIntoWords(chunk,messageLength,chunks.index(chunk)==len(chunks)-1)
+            a = self.__A
+            b = self.__B
+            c = self.__C
+            d = self.__D
 
-''' public methods'''
-    def encrypt(self):
+            F = 0
+            g = 0
+            for i in range(64):
+                if i<=15 :
+                    F = self.__F(b,c,d)
+                    g = i
+                elif i<=31:
+                    F = self.__G(b,c,d)
+                    g = (5*i+1)%16
+                elif i<=47:
+                    F = self.__H(b,c,d)
+                    g = (3*i+5)%16
+                elif i<=63:
+                    F = self.__I(b,c,d)
+                    g = (7*i)%16
+                else:
+                    raise NotImplementedError
+                F = F + a + self.__K[i] + words[g]
+                a = d
+                d = c
+                c = b
+                b = b + self.__leftrotate(F,self.__S[i])
+
+            self.__A = a
+            self.__B = b
+            self.__C = c
+            self.__D = d
+
+    def __digest(self, message):
+        self.__hash(message)
         
+        if DEBUG_FLAG:
+            print("A=",self.__A,"digest=",self.__hexdigest(self.__A))
+            print("B=",self.__B,"digest=",self.__hexdigest(self.__B))
+            print("C=",self.__C,"digest=",self.__hexdigest(self.__C))
+            print("D=",self.__D,"digest=",self.__hexdigest(self.__D))
+        digestMessage = self.__hexdigest(self.__A) + self.__hexdigest(self.__B) + self.__hexdigest(self.__C) + self.__hexdigest(self.__D)
 
-    def set_plain_text(self):
+        return digestMessage
 
-
-    def get_cipher_text(self,plain_text):
-        
+    def __hexdigest(self,number:int)-> str:
+        ''' returns hex form of an integer value, for example:
+        >>>hexdigest(65535)
+        'FFFF'
+        NOTE: this function only takes int, you may need to call it mutiple times when
+        dealing with larger numbers
+        '''
+        temp = '';
+        while number >0:
+            this_num = number %16
+            number = int(number /16)
+            this_hex = hex(this_num)
+            temp = this_hex[2].upper() + temp 
+        return temp
 
 if __name__ =='__main__':
     '''
     Create tests for this file
     '''
+    md5 = CryptographyMD5()
+    digest = md5.encrypt("Have a nice day!")
+    print(digest)
