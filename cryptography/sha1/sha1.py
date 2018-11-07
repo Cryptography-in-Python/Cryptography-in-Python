@@ -28,13 +28,11 @@ def shaone(input):
     if(len(h4)<32):
         h4=(len(h0)-32)*'0'+h4
     msg=''.join('{0:08b}'.format(ord(x),'b') for x in input)
-    print("MSG")
-    print(msg)
+
     if(len(msg)==0 or len(msg)%512!=0):
            msg= preprovessing(msg)
     sub=textwrap.wrap(msg,512)
-    print("SUB")
-    print(sub)
+
     #divide in to 512 subcunk
     for a in sub:
         wordsList=textwrap.wrap(a,32)
@@ -73,12 +71,6 @@ def shaone(input):
             a3=ensure32(leftrotate(a2,30))
             a2=ensure32(a1)
             a1=ensure32(temp)
-            print(i)
-            print(int(a1,2))
-            print(int(a2,2))
-            print(int(a3,2))
-            print(int(a4,2))
-            print(int(a5,2))
 
         h0=add(h0,a1)
         h1=add(h1,a2)
@@ -182,8 +174,3 @@ def f4(b,c,d):
     return f2(b,c,d)
 
 
-print(OR("101",'10'))
-print("RESULT: "+ shaone("lalala"))
-print(leftrotate('1100111010001010010001100000001',30))
-#print("RESULT: "+ hex(int(shaone("The quick brown fox jumps over the lazy cog"),2)))
-print("RESULT: "+ shaone("The quick brown fox jumps over the lazy cog"))
