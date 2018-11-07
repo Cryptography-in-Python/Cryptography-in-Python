@@ -25,6 +25,6 @@ RSA_ret_val=$?
 MD5
 MD5_ret_val=$?
 unittest
-unittest_ret_val = $?
+unittest_ret_val=$?
 
 exit $(($DES_ret_val | $RSA_ret_val | $MD5_ret_val | $unittest_ret_val))
