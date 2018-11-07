@@ -1,4 +1,3 @@
-import math
 import multiprocessing
 try:
     import secrets
@@ -8,6 +7,14 @@ except ImportError:
     below = random.randrange
 import random
 import time
+
+try:
+    from math import gcd
+except ImportError:
+    def gcd(a, b):
+        while b:
+            a, b = b, a % b
+        return a
 
 from decimal import Decimal
 
@@ -145,7 +152,7 @@ def preselect_numbers(file_name:str, bit_length=2048, numbers=30) -> None:
 def _get_coprime_num(num:int) -> int:
     random_num = _rand_between(1, num)
     
-    while math.gcd(num, random_num) != 1:
+    while gcd(num, random_num) != 1:
         random_num = _rand_between(1, num)
     
     return random_num
@@ -182,7 +189,17 @@ def key_generation(key_length=1024) -> int:
     return public_key, private_key, euler_n
 
 
+# ======================= Function Tools ===========================
+def check_variables(class_instance, *args):
+    def mid_level_wrapper(func):
+        def inner(self, *args, **kwargs):
+            for variables in args:
+                if variables not in class_instance.__dict__:
+                    raise ValueError("{} does not exist".format(class_instance))
+            return func(self, *args, **kwargs)
+        return inner
+    return mid_level_wrapper
+
 if __name__ == "__main__":
-    # preselect_numbers("preselected_prime_numbers.txt", bit_length=2048, numbers=30)
     print(get_prime_number(bit_length=1024))
 

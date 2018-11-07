@@ -11,32 +11,19 @@ class CryptographyRSA(CryptographyBase):
         self._ENCRYPT = lambda message, public_key,  totient: pow(message, public_key,  totient)
         self._DECRYPT = lambda cipher,  private_key, totient: pow(cipher,  private_key, totient)
 
+    @check_variables("_plain_text", "_public_key", "_euler_totient")
     def encrypt(self):
-        if "_plain_text" not in self.__dict__:
-            raise ValueError("Plain text has not been set yet")
-
         result = []
         for txt in self._plain_text:
-            # print(txt)
-            encrypted = self._ENCRYPT(txt, self._public_key, self._euler_totient)
-            result.append(encrypted)
+            result.append(self._ENCRYPT(txt, self._public_key, self._euler_totient))
         self._cipher_text = result
     
+    @check_variables("_cipher_text", "_private_key", "_euler_totient")
     def decrypt(self):
-        if "_cipher_text" not in self.__dict__:
-            raise ValueError("Cipher text has not been set yet") 
-
         result = []
         for txt in self._cipher_text:
-            decrypted = self._DECRYPT(txt, self._private_key, self._euler_totient)
-            result.append(decrypted)
-        string = ""
-
-        for txt in result:
-            txt_as_str = struct.pack("q", txt)
-            string += txt_as_str.decode()
-        print(string)
-        return result
+            result.append(self._DECRYPT(txt, self._private_key, self._euler_totient))
+        self._plain_text = result
 
     def get_key(self) -> {str : int}:
         return {
@@ -62,26 +49,45 @@ class CryptographyRSA(CryptographyBase):
             raise ValueError("Invalid key type")
 
     def __str__(self) -> str:
-        return "RSA"
+        return "RSA Encoder/Decoder (Key Size: {})".format(self._key_length)
 
     def __repr__(self) -> str:
         return str(self)
 
+    @check_variables("_plain_text")
     def get_cipher_text(self) -> str:
-        if "_ciper_text" in self.__dict__:
-            return self._ciper_text
-        raise ValueError("The plain text has not been encrypted/cipher text has not been set")
+        return self._cipher_text
 
     def set_cipher_text(self, cipher_text='') -> None:
-        self._ciper_text = cipher_text
+        self._cipher_text = cipher_text
 
     def set_plain_text(self, plain_text='') -> None:
         if isinstance(plain_text, str):
             self._plain_text = plain_text.encode('utf-8')
+        
+        elif isinstance(plain_text, int):
+            pass
 
+        elif isinstance(plain_text, bytes):
+            self._plain_text = plain_text
 
-    def get_plain_text(self) -> str:
-        pass
+    def set_plain_text_from_file(self, file_path:str) -> None:
+        with open(file_path, 'rb') as file_handler:
+            self._plain_text = file_handler.read()
+
+    @check_variables("_plain_text")
+    def get_plain_text(self) -> bytes:
+        return self._plain_text
+    
+    @check_variables("_plain_text")
+    def get_plain_text(self, decode_func=bytes.decode) -> None:
+        return (decode_func(member) for member in self._plain_text)
+
+    @check_variables("_cipher_text")
+    def to_file(self, file_path:str) -> None:
+        with open(file_path, 'wb') as file_handler:
+            for members in self._cipher_text:
+                file_handler.write(bytes[members])
 
     @classmethod
     def from_instance(cls, instance):
@@ -91,6 +97,12 @@ if __name__ == "__main__":
     rsa_instance = CryptographyRSA()
     rsa_instance.set_key(key='initial')
     rsa_instance.set_plain_text("Nogizaka")
-    encrypted = rsa_instance.encrypt()
-    # rsa_instance.set_cipher_text(encrypted)
+    rsa_instance.encrypt()
     rsa_instance.decrypt()
+    
+    def decoder(int_like:int) -> str:
+        return bytes([int_like]).decode()
+
+    results = rsa_instance.get_plain_text(decode_func=decoder)
+    print("".join([mem for mem in results]))
+    
