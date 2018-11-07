@@ -18,7 +18,7 @@ _known_primes = [
 random.seed(time.time())
 
 def _rand_between(lower:int, upper:int) -> int:
-    num = secrets.randbelow(upper)
+    num = below(upper)
     while num < lower:
         num = (upper)
     return num
