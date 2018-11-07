@@ -4,6 +4,8 @@ import secrets
 import random
 import time
 
+from decimal import Decimal
+
 _known_primes = [
     2, 3
 ]
@@ -22,9 +24,7 @@ def _miller_rabin(number:int, accuracy:int) -> bool:
     '''
     try:
         r, d = _miller_rabin_decompose(number)
-        print(r, d)
     except ValueError:
-        print("Error")
         return False
 
     for _ in range(accuracy):
@@ -136,6 +136,46 @@ def preselect_numbers(file_name:str, bit_length=2048, numbers=30) -> None:
         for _ in range(numbers):
             number = get_prime_number(bit_length)
             file.write(str(number) + "\n")
+
+def _get_coprime_num(num:int) -> int:
+    random_num = _rand_between(1, num)
+    
+    while math.gcd(num, random_num) != 1:
+        random_num = _rand_between(1, num)
+    
+    return random_num
+
+def _extended_gcd(aa, bb):
+    '''
+    Temporarily used
+    From https://rosettacode.org/wiki/Modular_inverse#Iteration_and_error-handling
+    '''
+    lastremainder, remainder = abs(aa), abs(bb)
+    x, lastx, y, lasty = 0, 1, 1, 0
+    while remainder:
+        lastremainder, (quotient, remainder) = remainder, divmod(lastremainder, remainder)
+        x, lastx = lastx - quotient*x, x
+        y, lasty = lasty - quotient*y, y
+    return lastremainder, lastx * (-1 if aa < 0 else 1), lasty * (-1 if bb < 0 else 1)
+
+def _multiplicative_inverse(a:int, n:int) -> int:
+    g, x, y = _extended_gcd(a, n)
+    if g != 1:
+	    raise ValueError
+    return x % n
+
+def key_generation(key_length=1024) -> int:
+    prime_number_a = get_prime_number(bit_length=key_length)
+    prime_number_b = get_prime_number(bit_length=key_length)
+
+    euler_n       = prime_number_a * prime_number_b
+    euler_totient = (prime_number_a - 1) * (prime_number_b - 1)
+
+    public_key  = _get_coprime_num(euler_totient)
+    private_key = _multiplicative_inverse(public_key, euler_totient)
+
+    return public_key, private_key, euler_n
+
 
 if __name__ == "__main__":
     # preselect_numbers("preselected_prime_numbers.txt", bit_length=2048, numbers=30)
