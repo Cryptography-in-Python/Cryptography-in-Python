@@ -4,8 +4,9 @@ from .rsa_misc                    import *
 
 class CryptographyRSA(CryptographyBase):
 
-    def __init__(self):
-        pass
+    def __init__(self, key_length=1024, ):
+        self._prime_number_a = None
+        self._prime_number_b = None
 
     def encrypt(self):
         pass

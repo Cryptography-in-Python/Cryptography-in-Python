@@ -1,4 +1,5 @@
 import math
+import multiprocessing
 import secrets
 import random
 import time
@@ -60,6 +61,7 @@ def _SPRP_is_composite(a, d, n, r):
     '''
     Referred from http://primes.utm.edu/prove/prove2_3.html
     '''
+    # print(d, n, r)
     if pow(a, d, n) == 1:
         return False
 
@@ -81,7 +83,7 @@ def _query_SPRP_table(d:int, n:int, r:int, precision:int) -> bool:
     if n < 118670087467: 
         if n == 3215031751: 
             return False
-            
+
         return not any(_SPRP_is_composite(a, d, n, r) for a in (2, 3, 5, 7))
 
     if n < 2152302898747: 
@@ -117,12 +119,25 @@ def get_prime_number(bit_length=64) -> int:
     a_possible_number = random.getrandbits(bit_length)
     a_possible_number |= 1
 
-    while not is_prime(a_possible_number):
+    while not(a_possible_number % 5 != 0 and is_prime(a_possible_number)):
         a_possible_number = random.getrandbits(bit_length)
         a_possible_number |= 1
     
     return a_possible_number
 
+def get_prime_number_multiprocessing(bit_length=64) -> int:
+    pass
+
+def preselect_numbers(file_name:str, bit_length=2048, numbers=30) -> None:
+    '''
+    preselect few prime numbers so that users can use them quickly
+    '''
+    with open(file_name, "w") as file:
+        for _ in range(numbers):
+            number = get_prime_number(bit_length)
+            file.write(str(number) + "\n")
+
 if __name__ == "__main__":
-    print(get_prime_number(bit_length=128))
+    # preselect_numbers("preselected_prime_numbers.txt", bit_length=2048, numbers=30)
+    print(get_prime_number(bit_length=1024))
 
