@@ -15,17 +15,11 @@ class CryptographyRSA(CryptographyBase):
 
     @check_variables("_plain_text", "_public_key", "_euler_totient")
     def encrypt(self):
-        result = []
-        for txt in self._plain_text:
-            result.append(self._ENCRYPT(txt, self._public_key, self._euler_totient))
-        self._cipher_text = result
+        self._cipher_text = (self._ENCRYPT(txt, self._public_key, self._euler_totient) for txt in self._plain_text)
     
     @check_variables("_cipher_text", "_private_key", "_euler_totient")
     def decrypt(self):
-        result = []
-        for txt in self._cipher_text:
-            result.append(self._DECRYPT(txt, self._private_key, self._euler_totient))
-        self._plain_text = result
+        self._plain_text = (self._DECRYPT(txt, self._private_key, self._euler_totient) for txt in self._cipher_text)
 
     def get_key(self) -> {str : int}:
         return {
@@ -64,11 +58,8 @@ class CryptographyRSA(CryptographyBase):
         if isinstance(cipher_text, bytes):
             cipher_text = pad_to_fit_block(cipher_text, self._block_size)
 
-            self._cipher_text = []
-            for index in range(0, len(cipher_text), self._block_size):
-                self._cipher_text.append(
-                    int.from_bytes(cipher_text[index:index+self._block_size], byteorder=self._BYTEORDER)
-                )
+            self._cipher_text = [int.from_bytes(cipher_text[index:index+self._block_size], byteorder=self._BYTEORDER)
+            for index in range(0, len(cipher_text), self._block_size)]
 
     def set_plain_text(self, plain_text='') -> None:
         if isinstance(plain_text, str):
@@ -90,11 +81,17 @@ class CryptographyRSA(CryptographyBase):
 
     @check_variables("_cipher_text")
     def get_cipher_text_as_bytes(self):
-        return b''.join([member.to_bytes(self._block_size, byteorder=self._BYTEORDER) for member in self._cipher_text])
+        return b''.join([member.to_bytes(self._block_size, byteorder=self._BYTEORDER) 
+        for member in self._cipher_text])
     
     @check_variables("_plain_text")
-    def get_plain_text(self, decode_func=bytes.decode) -> None:
-        return (decode_func(member) for member in self._plain_text)
+    def get_plain_text_as_bytes(self):
+        return b''.join([member.to_bytes(self._block_size, byteorder=self._BYTEORDER) 
+        for member in self._plain_text])
+
+    def get_plain_text_as_string(self):
+        return ''.join([member.to_bytes(self._block_size, byteorder=self._BYTEORDER).decode() 
+        for member in self._plain_text])
 
     @check_variables("_cipher_text")
     def to_file(self, file_path:str) -> None:
@@ -114,10 +111,7 @@ if __name__ == "__main__":
     result_enc = rsa_instance.get_cipher_text_as_bytes()
     rsa_instance.set_cipher_text(result_enc)
     rsa_instance.decrypt()
-        
-    def decoder(int_like:int) -> str:
-        return bytes([int_like]).decode()
 
-    results = rsa_instance.get_plain_text(decode_func=decoder)
-    print("".join([mem for mem in results]))
+    results = rsa_instance.get_plain_text_as_string()
+    print(results)
     
