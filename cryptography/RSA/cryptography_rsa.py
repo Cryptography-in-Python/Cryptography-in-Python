@@ -89,8 +89,9 @@ class CryptographyRSA(CryptographyBase):
         return b''.join([member.to_bytes(self._block_size, byteorder=self._BYTEORDER) 
         for member in self._plain_text])
 
+    @check_variables("_plain_text")
     def get_plain_text_as_string(self):
-        return ''.join([member.to_bytes(self._block_size, byteorder=self._BYTEORDER).decode() 
+        return ''.join([member.to_bytes(member.bit_length(), byteorder=self._BYTEORDER).decode().rstrip('\0')
         for member in self._plain_text])
 
     @check_variables("_cipher_text")
@@ -113,5 +114,5 @@ if __name__ == "__main__":
     rsa_instance.decrypt()
 
     results = rsa_instance.get_plain_text_as_string()
-    print(results)
+    print(len(results), type(results), repr(results))
     

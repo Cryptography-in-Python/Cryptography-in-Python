@@ -10,6 +10,8 @@ class CryptographyTest(unittest.TestCase):
         cls._RSA_instance = CryptographyRSA()
         cls._plain_text   = "Nogizaka"
 
+        cls._cipher_text_RSA  = None
+
 
     def testIfDESCanGetPlainTest(self):
         self._DES_instance.set_plain_text(plain_text=self._plain_text)
@@ -19,18 +21,18 @@ class CryptographyTest(unittest.TestCase):
         msg="The plain text in DES instance does not equal to preset plain text")
 
     def testIfRSAEncipherDecipherIsSymmetric(self):
-        self._RSA_instance = CryptographyRSA()
+        # =========== Key Generation & Encryption ====================
         self._RSA_instance.set_key(key='initial')
         self._RSA_instance.set_plain_text(self._plain_text)
         self._RSA_instance.encrypt()
-        self._RSA_instance.decrypt()
-        
-        def decoder(int_like:int) -> str:
-            return bytes([int_like]).decode()
+        self._cipher_text_RSA = self._RSA_instance.get_cipher_text_as_bytes()
 
-        results = self._RSA_instance.get_plain_text(decode_func=decoder)
+        # ============ Decryption ============
+        self._RSA_instance.set_cipher_text(self._cipher_text_RSA)
+        self._RSA_instance.decrypt()
+        result = self._RSA_instance.get_plain_text_as_string()
         self.assertEqual(
-            "".join([mem for mem in results]), 
+            result, 
             self._plain_text,
             msg="RSA cannot decipher its encrypted cipher text"
         )
