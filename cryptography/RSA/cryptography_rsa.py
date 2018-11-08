@@ -96,14 +96,13 @@ class CryptographyRSA(CryptographyBase):
 if __name__ == "__main__":
     rsa_instance = CryptographyRSA()
     rsa_instance.set_key(key='initial')
-    rsa_instance.set_plain_text_from_file("summary_3_jerome_mao.txt")
+    rsa_instance.set_plain_text("Nogizaka46")
     rsa_instance.encrypt()
     rsa_instance.decrypt()
-    rsa_instance.to_file("test_out.txt")
-    
-    # def decoder(int_like:int) -> str:
-    #     return bytes([int_like]).decode()
+        
+    def decoder(int_like:int) -> str:
+        return bytes([int_like]).decode()
 
-    # results = rsa_instance.get_plain_text(decode_func=decoder)
-    # print("".join([mem for mem in results]))
+    results = rsa_instance.get_plain_text(decode_func=decoder)
+    print("".join([mem for mem in results]))
     
