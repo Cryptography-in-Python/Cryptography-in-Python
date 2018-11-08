@@ -5,17 +5,17 @@ while other functions and values would be supportive use.
 Reference:https://en.wikipedia.org/wiki/MD5
 '''
 
-DEBUG_FLAG = 0 # Change to 0 for release
+DEBUG_FLAG = 1 # Change to 0 for release
 MAX_BITS = 32 # Max bits of an integer, normally 32
 
 class CryptographyMD5():
 
     def __init__(self):
         # Some magic numbers used in MD5
-        self.__A = 0X67452301
-        self.__B = 0XEFCDAB89
-        self.__C = 0X98BADCFE
-        self.__D = 0X10325476
+        self.__A = 0x67452301
+        self.__B = 0xefcdab89
+        self.__C = 0x98badcfe
+        self.__D = 0x10325476
         self.__K = [0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
                     0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,
                     0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be,
@@ -36,6 +36,11 @@ class CryptographyMD5():
                     5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20,
                     4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23,
                     6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21]
+        self.__mask = 0
+        for i in range(MAX_BITS):
+            self.__mask |= 0x1
+            self.__mask <<= 1
+        self.__mask >>= 1
 
 ## public methods
     def encrypt(self,message):
@@ -58,17 +63,6 @@ class CryptographyMD5():
         '''linear function I'''
         return y^(x|(~z))
 
-    def __R(self,function,a,b,c,d,x,s,ac):
-        '''Warpper function for MD5 rounds'''
-        r = a + function(b,c,d)
-        r = r + x
-        r = r + ac
-        r = r & 0xffffffff
-        r = rotate_left(r,s,MAX_BITS)
-        r = r & 0xffffffff
-        r = r + b
-        return r & 0xffffffff # <- to make r unsigned
-
     def __pad(self,message):
         ''' First step of hashing, pad 1 and length to the end of message'''
         padded = ''
@@ -79,7 +73,8 @@ class CryptographyMD5():
         while (len(message)%512!=448):
             message += '0' 
         #bring the length of the message up to 64 bits fewer than a multiple of 512
-
+        if DEBUG_FLAG:
+            print('padlength=',self.__padlength(messageLength))
         return message + self.__padlength(messageLength)
         # rewrite message with 1 and the ending length
 
@@ -101,24 +96,16 @@ class CryptographyMD5():
         ''' Split the chunks into 16 32-bit words'''
         words = [0] * 16
         splitted = self.__splitIntoBlocks(message,32)
-
+        if DEBUG_FLAG:
+            print('splitted=',splitted)
         wordIndex = 0
         for word in splitted:
-            byte = self.__splitIntoBlocks(word,8)
-            temp = 0
-            power= 0
-
-            for byteTemp in byte:
-                temp = words[wordIndex]
-                temp = temp | int(byteTemp,2) << power
-                words[wordIndex] = temp
-
+            for bit in word:
+                if bit == '1':
+                    words[wordIndex]|=1
+                words[wordIndex]<<=1
+            words[wordIndex]>>=1
             wordIndex += 1
-            power = 0
-
-        if finalBlock: # correct the last two bytes if on the last block
-            words[-2] = messageLength <<3
-            words[-1] = messageLength >>29
 
         return words
 
@@ -128,18 +115,22 @@ class CryptographyMD5():
             for byte in bytearray(message.encode('utf-8')))
 
     def __leftrotate(self,num,s):
-        return (num<<s)|(num>>(MAX_BITS-s))
+        return ((num<<s)|(num>>(MAX_BITS-s)))&self.__mask
 
     def __hash(self,message):
         '''The main hashing function'''
-        messageLength = len(message.encode('utf-8'))
+        messageLength = len(message.encode('utf-8')*8)
         chunks = self.__splitIntoBlocks(
                  self.__pad(
                  self.__toBinaryString(message))
                  ,512)
+        if DEBUG_FLAG:
+            print('chunks=',chunks)
 
         for chunk in chunks:
             words = self.__splitIntoWords(chunk,messageLength,chunks.index(chunk)==len(chunks)-1)
+            if DEBUG_FLAG:
+                print('words=',words)
             a = self.__A
             b = self.__B
             c = self.__C
@@ -169,10 +160,10 @@ class CryptographyMD5():
                 b = b + self.__leftrotate(F,self.__S[i])
 
             # add masks to suppress upper bits
-            self.__A = a & 0xffffffff
-            self.__B = b & 0xffffffff
-            self.__C = c & 0xffffffff
-            self.__D = d & 0xffffffff
+            self.__A = (a + self.__A) & 0xffffffff
+            self.__B = (b + self.__B) & 0xffffffff
+            self.__C = (c + self.__C) & 0xffffffff
+            self.__D = (d + self.__D) & 0xffffffff
 
     def __digest(self, message):
         self.__hash(message)
@@ -202,13 +193,15 @@ class CryptographyMD5():
         return temp
 
 if __name__ =='__main__':
+
     '''
     Create tests for this file
     '''
-    md5 = CryptographyMD5()
-    digest = md5.encrypt("Have a nice day!!")
-    print(digest)
+    import hashlib
     message = input('Please type the message you want to hash:')
     md5 = CryptographyMD5()
     digest = md5.encrypt(message)
-    print(digest)
+    print('MD5 by our function:',digest)
+    hashlibMD5 = hashlib.md5()
+    hashlibMD5.update(message.encode('utf-8'))
+    print('MD5 by hashlib     :',hashlibMD5.hexdigest().upper())
