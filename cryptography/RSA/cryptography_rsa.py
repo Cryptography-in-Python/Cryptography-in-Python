@@ -5,7 +5,7 @@ from .rsa_misc                    import *
 class CryptographyRSA(CryptographyBase):
 
     def __init__(self, key_length=512):
-        self._key_length     = key_length
+        self._key_length     = int(key_length / 2)
         self._block_size     = int(key_length / 8)
 
         self._ENCRYPT = lambda message, public_key,  totient: pow(message, public_key,  totient)
@@ -86,8 +86,8 @@ class CryptographyRSA(CryptographyBase):
     @check_variables("_cipher_text")
     def to_file(self, file_path:str) -> None:
         with open(file_path, 'wb') as file_handler:
-            for members in self._cipher_text:
-                file_handler.write(bytes[members])
+            for members in self._plain_text:
+                file_handler.write(bytes([members]))
 
     @classmethod
     def from_instance(cls, instance):
@@ -96,13 +96,14 @@ class CryptographyRSA(CryptographyBase):
 if __name__ == "__main__":
     rsa_instance = CryptographyRSA()
     rsa_instance.set_key(key='initial')
-    rsa_instance.set_plain_text("Nogizaka")
+    rsa_instance.set_plain_text_from_file("summary_3_jerome_mao.txt")
     rsa_instance.encrypt()
     rsa_instance.decrypt()
+    rsa_instance.to_file("test_out.txt")
     
-    def decoder(int_like:int) -> str:
-        return bytes([int_like]).decode()
+    # def decoder(int_like:int) -> str:
+    #     return bytes([int_like]).decode()
 
-    results = rsa_instance.get_plain_text(decode_func=decoder)
-    print("".join([mem for mem in results]))
+    # results = rsa_instance.get_plain_text(decode_func=decoder)
+    # print("".join([mem for mem in results]))
     

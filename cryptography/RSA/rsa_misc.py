@@ -132,8 +132,7 @@ def get_prime_number(bit_length=64) -> int:
     a_possible_number |= 1
 
     while not(a_possible_number % 5 != 0 and is_prime(a_possible_number)):
-        a_possible_number = random.getrandbits(bit_length)
-        a_possible_number |= 1
+        a_possible_number += 2
     
     return a_possible_number
 
@@ -190,12 +189,12 @@ def key_generation(key_length=1024) -> int:
 
 
 # ======================= Function Tools ===========================
-def check_variables(class_instance, *args):
+def check_variables(*variables):
     def mid_level_wrapper(func):
         def inner(self, *args, **kwargs):
-            for variables in args:
-                if variables not in class_instance.__dict__:
-                    raise ValueError("{} does not exist".format(class_instance))
+            for variable in variables:
+                if variable not in self.__dict__:
+                    raise ValueError("{} does not exist".format(variable))
             return func(self, *args, **kwargs)
         return inner
     return mid_level_wrapper
