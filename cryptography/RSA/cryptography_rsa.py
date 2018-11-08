@@ -5,11 +5,13 @@ from .rsa_misc                    import *
 class CryptographyRSA(CryptographyBase):
 
     def __init__(self, key_length=512):
-        self._key_length     = int(key_length / 2)
-        self._block_size     = int(key_length / 8)
+        self._key_length = int(key_length / 2)
+        self._block_size = int(key_length / 8)
 
         self._ENCRYPT = lambda message, public_key,  totient: pow(message, public_key,  totient)
         self._DECRYPT = lambda cipher,  private_key, totient: pow(cipher,  private_key, totient)
+
+        self._BYTEORDER = 'little'
 
     @check_variables("_plain_text", "_public_key", "_euler_totient")
     def encrypt(self):
@@ -59,7 +61,14 @@ class CryptographyRSA(CryptographyBase):
         return self._cipher_text
 
     def set_cipher_text(self, cipher_text='') -> None:
-        self._cipher_text = cipher_text
+        if isinstance(cipher_text, bytes):
+            cipher_text = pad_to_fit_block(cipher_text, self._block_size)
+
+            self._cipher_text = []
+            for index in range(0, len(cipher_text), self._block_size):
+                self._cipher_text.append(
+                    int.from_bytes(cipher_text[index:index+self._block_size], byteorder=self._BYTEORDER)
+                )
 
     def set_plain_text(self, plain_text='') -> None:
         if isinstance(plain_text, str):
@@ -78,6 +87,10 @@ class CryptographyRSA(CryptographyBase):
     @check_variables("_plain_text")
     def get_plain_text(self) -> bytes:
         return self._plain_text
+
+    @check_variables("_cipher_text")
+    def get_cipher_text_as_bytes(self):
+        return b''.join([member.to_bytes(self._block_size, byteorder=self._BYTEORDER) for member in self._cipher_text])
     
     @check_variables("_plain_text")
     def get_plain_text(self, decode_func=bytes.decode) -> None:
@@ -98,6 +111,8 @@ if __name__ == "__main__":
     rsa_instance.set_key(key='initial')
     rsa_instance.set_plain_text("Nogizaka46")
     rsa_instance.encrypt()
+    result_enc = rsa_instance.get_cipher_text_as_bytes()
+    rsa_instance.set_cipher_text(result_enc)
     rsa_instance.decrypt()
         
     def decoder(int_like:int) -> str:

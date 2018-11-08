@@ -6,6 +6,7 @@ except ImportError:
     import random
     below = random.randrange
 import random
+import struct
 import time
 
 try:
@@ -195,9 +196,26 @@ def check_variables(*variables):
             for variable in variables:
                 if variable not in self.__dict__:
                     raise ValueError("{} does not exist".format(variable))
+
             return func(self, *args, **kwargs)
         return inner
     return mid_level_wrapper
+
+# ======================== Padding Tools ========================
+def pad_bytes(byte_string:bytes, expected_length:int) -> bytes:
+    if len(byte_string) == expected_length:
+        return byte_string
+
+    elif len(byte_string) < expected_length:
+        return byte_string + b'\x00' * (expected_length - len(byte_string))
+    
+    else:
+        raise ValueError("The expected length is shorter than the actual size of the byte string")
+
+def pad_to_fit_block(byte_string:bytes, block_size:int) -> bytes:
+    nearest_size = int(((len(byte_string) // block_size) + 1) * block_size)
+    return pad_bytes(byte_string, nearest_size)
+
 
 if __name__ == "__main__":
     print(get_prime_number(bit_length=1024))
