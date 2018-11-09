@@ -1,7 +1,7 @@
-from bitarray import bitarray
-
 from .des_misc                    import *
 from ..base.cryptography_abstract import CryptographyBase
+
+# from Crypto.Cipher import DES
 
 class CryptographyDES(CryptographyBase):
 
@@ -10,7 +10,8 @@ class CryptographyDES(CryptographyBase):
     EXCHANGE_NUM  = 16
 
     def __init__(self):
-        pass
+        self._block_size = 8
+        self._BYTEORDER  = 'little'
 
     def encrypt(self):
         '''
@@ -18,60 +19,37 @@ class CryptographyDES(CryptographyBase):
         '''
         if "_plain_text" not in self.__dict__:
             raise ValueError("A plain text needs to be provided")
-
         if "_subkeys" not in self.__dict__:
             raise ValueError("A user defined key needs to be provided")
-
-        print("Pre-Process Length:", len(self._plain_text)) # debug
-
-        _inputs = split_data_to_every_n_bits(self._plain_text, CryptographyDES.BLOCK_SIZE)
-        _encrypt_output = bitarray()
-
-        for input_block in _inputs:
-            input_block = permutation_mapping(input_block, inverse=False)
-
-            left_hand  = input_block[:CryptographyDES.HALF_BLOCK]
-            right_hand = input_block[CryptographyDES.HALF_BLOCK:]
-
-            for count in range(CryptographyDES.EXCHANGE_NUM):
-                subkey     = self._subkeys[count]
-
-                left_temp  = right_hand
-                right_temp = left_hand ^ f_function(right_hand, subkey)
-
-                left_hand, right_hand = left_temp, right_temp
-
-            current_block = bitarray()
-            current_block.extend(left_hand)
-            current_block.extend(right_hand)
-            current_block = permutation_mapping(current_block, inverse=True)
-
-            _encrypt_output.extend(current_block)
-
-        self._cipher_text = _encrypt_output
+        
+        result = []
+        print("Plain Text:", self._plain_text[0])
+        for member in self._plain_text:
+            result.append(encrypt_block(member, self._subkeys))
+        
+        self._cipher_text = result
+        for line in result:
+            print("line", line)
 
     def decrypt(self):
-        _inputs = split_data_to_every_n_bits(self._cipher_text, CryptographyDES.BLOCK_SIZE)
-        _decrypt_output = bitarray()
+        result = []
+        for member in self._cipher_text:
+            result.append(decrypt_block(member, self._subkeys))
+        
+        print("Decrypted:", result[0])
 
-        decrypt_keys = self._subkeys[::-1]
-
-        for input_block in _inputs:
-            left_hand  = input_block[:CryptographyDES.HALF_BLOCK]
-            right_hand = input_block[CryptographyDES.HALF_BLOCK:]
-
-
-        # self._cipher_text = _encrypt_output
-
+        # des = DES.new("IkutaIku")
+        # cipher_text = int(self._cipher_text[0], base=2).to_bytes(8, byteorder=self._BYTEORDER)
+        # print(des.decrypt(cipher_text))
 
     def set_plain_text(self, plain_text='') -> None:
         if isinstance(plain_text, str):
             plain_text = plain_text.encode('utf-8')
-        elif isinstance(plain_text, bitarray):
-            return
+        
+        self._plain_text = [int.from_bytes(plain_text[index:index+self._block_size], byteorder=self._BYTEORDER)
+        for index in range(0, len(plain_text), self._block_size)]
 
-        self._plain_text = bitarray()
-        self._plain_text.frombytes(plain_text)
+        self._plain_text = [to_bin(member, 64) for member in self._plain_text]
 
     def get_plain_text(self) -> str:
         if "_plain_text" not in self.__dict__:
@@ -91,12 +69,9 @@ class CryptographyDES(CryptographyBase):
         '''
         if isinstance(key, str):
             key = key.encode('utf-8')
-        elif isinstance(key, bitarray):
-            return
         
-        self._user_supplied_key = bitarray()
-        self._user_supplied_key.frombytes(key)
-        self._subkeys = generate_subkeys(self._user_supplied_key)
+        self._user_supplied_key = int.from_bytes(key, byteorder='little')
+        self._subkeys = generate_subkeys(to_bin(self._user_supplied_key, 64))
 
     def get_key(self):
         return self._subkeys
@@ -120,6 +95,7 @@ if __name__ == "__main__":
 
     des_instance = CryptographyDES()
     des_instance.set_plain_text(message)
-    des_instance.set_key("Ikuta\0\0\0")
+    des_instance.set_key("IkutaIku")
     des_instance.encrypt()
-    encrypted = des_instance.get_cipher_text()
+    des_instance.decrypt()
+
