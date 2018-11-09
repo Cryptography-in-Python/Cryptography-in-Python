@@ -81,3 +81,49 @@ def hexdigest(number:int)-> str:
         this_hex = hex(this_num)
         temp = this_hex[2].upper() + temp 
     return temp
+
+
+# ======================= Function Tools ===========================
+def check_variables(*variables):
+    def mid_level_wrapper(func):
+        def inner(self, *args, **kwargs):
+            for variable in variables:
+                if variable not in self.__dict__:
+                    raise ValueError("{} does not exist".format(variable))
+
+            return func(self, *args, **kwargs)
+        return inner
+    return mid_level_wrapper
+
+def check_input_size(variable_size=64, index=1):
+    def mid_level_wrapper(func):
+        def inner(*args, **kwargs):
+            assert args[index-1].bit_length() == variable_size, "the argument does not have the declared size"
+            return func(self, *args, **kwargs)
+        return inner
+    return mid_level_wrapper
+
+# ======================== Padding Tools ========================
+def pad_bytes(byte_string:bytes, expected_length:int) -> bytes:
+    if len(byte_string) == expected_length:
+        return byte_string
+
+    elif len(byte_string) < expected_length:
+        return byte_string + b'\x00' * (expected_length - len(byte_string))
+    
+    else:
+        raise ValueError("The expected length is shorter than the actual size of the byte string")
+
+def pad_to_fit_block(byte_string:bytes, block_size:int) -> bytes:
+    nearest_size = int(((len(byte_string) // block_size) + 1) * block_size)
+    return pad_bytes(byte_string, nearest_size)
+
+def pad_int(number:int, bits:int) -> int:
+    if number.bit_length() < bits:
+        return number << (bits - number.bit_length()) 
+    elif number.bit_length() == bits:
+        return number
+    else:
+        raise ValueError("number of bits is longer than the size of number")
+
+

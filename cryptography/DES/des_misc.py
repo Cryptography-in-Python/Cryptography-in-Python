@@ -161,17 +161,16 @@ S_BOX_INPUT_SIZE_DES  = 6
 HALF_ROUND_KEY_SIZE_DES = 28
 FULL_KEY_SIZE_DES       = 64
 
-def _lookup_s_box(value:bitarray, s_box_stage:int) -> bitarray:
+@check_input_size(variable_size=S_BOX_INPUT_SIZE_DES, index=1)
+def _lookup_s_box(value:int, s_box_stage:int) -> bitarray:
     '''
     help locate the value's mapping in s boxes
     '''
-    first_last_cmb = int(value[0]) << 1 | int(value[-1])
-    middle_section = int(value[1:-1].to01(), base=2)
+    first_last_cmb = (value >> 5) << 1 | (value & 0b1)
+    middle_section = value & 0b011110
+    new_value      = _s_box_tables[s_box_stage][first_last_cmb][middle_section]
 
-    new_value  = _s_box_tables[s_box_stage][first_last_cmb][middle_section]
-    raw_output = bitarray(bin(new_value)[2:])
-
-    return expand_bitarray_to_n_bits(raw_output, S_BOX_OUTPUT_SIZE_DES)
+    return pad_int(new_value, S_BOX_OUTPUT_SIZE_DES)
 
 def f_function(plain_text_slice:bitarray, part_of_key:bitarray) -> bitarray:
     '''
@@ -197,45 +196,13 @@ def f_function(plain_text_slice:bitarray, part_of_key:bitarray) -> bitarray:
     
     return final_result
 
-def generate_subkeys(key:bitarray, decrypt=False) -> [bitarray]:
+@check_input_size(variable_size=64, index=1)
+def generate_subkeys(key:int, decrypt=False) -> [int]:
     '''
     generate 16 round keys
     '''
-    subkeys    = []
-    expand_key = expand_bitarray_to_n_bits(key.copy(), FULL_KEY_SIZE_DES)
 
-    initial_choice = bitarray()
-    for bit in _permutation_choice_one:
-        initial_choice.append(expand_key[bit])
-
-    left_hand, right_hand = initial_choice[:HALF_ROUND_KEY_SIZE_DES], initial_choice[HALF_ROUND_KEY_SIZE_DES:]
-    for count in range(NUMBER_OF_SHIFTS_KEY_GEN_DES):
-
-        lft_temp_int = int(left_hand.to01(), base=2)
-        rgt_temp_int = int(right_hand.to01(), base=2)
-
-        lft_temp_int = rotate_left(lft_temp_int, _shift_bits_table[count + 1], max_bits=HALF_ROUND_KEY_SIZE_DES)
-        rgt_temp_int = rotate_left(rgt_temp_int, _shift_bits_table[count + 1], max_bits=HALF_ROUND_KEY_SIZE_DES)
-
-        lft_temp_bit = bitarray(bin(lft_temp_int)[2:])
-        rgt_temp_bit = bitarray(bin(rgt_temp_int)[2:])
-
-        lft_temp_bit = expand_bitarray_to_n_bits(lft_temp_bit, HALF_ROUND_KEY_SIZE_DES)
-        rgt_temp_bit = expand_bitarray_to_n_bits(rgt_temp_bit, HALF_ROUND_KEY_SIZE_DES)
-
-        all_current_bit = bitarray()
-        all_current_bit.extend(lft_temp_bit)
-        all_current_bit.extend(rgt_temp_bit)
-
-        subkey = bitarray()
-
-        for member in _permutation_choice_two:
-            subkey.append(all_current_bit[member])
-        subkeys.append(subkey)
-
-        left_hand, right_hand = lft_temp_bit, rgt_temp_bit
-
-    return subkeys
+    
 
 def permutation_mapping(bit_array:bitarray, inverse=False) -> bitarray:
     result = bitarray()

@@ -1,6 +1,8 @@
 import struct
 from ..base.cryptography_abstract import CryptographyBase
 from .rsa_misc                    import *
+from ..base.misc                  import *
+
 
 class CryptographyRSA(CryptographyBase):
 
@@ -114,5 +116,4 @@ if __name__ == "__main__":
     rsa_instance.decrypt()
 
     results = rsa_instance.get_plain_text_as_string()
-    print(len(results), type(results), repr(results))
-    
+    print("Plain Text:")    
