@@ -6,11 +6,10 @@ Reference:https://en.wikipedia.org/wiki/MD5
 '''
 
 DEBUG_FLAG = 1 # Change to 0 for release
-MAX_BITS = 32 # Max bits of an integer, normally 32
-
+MAX_BITS = 32
 class CryptographyMD5():
 
-    def __init__(self):
+    def __init__(self): # maxbits defines the bits a value could contain
         # Some magic numbers used in MD5
         self.__A = 0x67452301
         self.__B = 0xefcdab89
