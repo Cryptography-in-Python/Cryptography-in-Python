@@ -5,7 +5,7 @@ while other functions and values would be supportive use.
 Reference:https://en.wikipedia.org/wiki/MD5
 '''
 
-DEBUG_FLAG = 1 # Change to 0 for release
+DEBUG_FLAG = 0 # Change to 0 for release
 MAX_BITS = 32
 class CryptographyMD5():
 
@@ -40,6 +40,8 @@ class CryptographyMD5():
             self.__mask |= 0x1
             self.__mask <<= 1
         self.__mask >>= 1
+        if DEBUG_FLAG:
+            print('mask=',hex(self.__mask))
 
 ## public methods
     def encrypt(self,message):
@@ -66,7 +68,8 @@ class CryptographyMD5():
         ''' First step of hashing, pad 1 and length to the end of message'''
         padded = ''
         messageLength = len(message)
-
+        if DEBUG_FLAG:
+            print('messageLength=',messageLength)
         message += '1' # append 1 to mark end of message
 
         while (len(message)%512!=448):
@@ -80,11 +83,15 @@ class CryptographyMD5():
     def __padlength(self,length):
         ''' The remaining bits are filled up with 64 bits representing 
             the length of the original message, modulo 2^64'''
-        binLength = bin(length)[2:]
-        if (len(binLength)>64):
-            return binLength[len(binLength)-64:]
-        else:
-            return ''.join(['0' for i in range(64-len(binLength))])+binLength
+        binLength = bin(length).replace('b','0')
+        if len(binLength) > 64:
+            binLength = binLength[len(binLength)-64:] # cut through
+        
+        padded = ''
+        padded = "0" * (64 - len(binLength))
+        padded += binLength[::-1] # reverse length byte first to preserve correct order
+
+        return padded[::-1]
 
     def __splitIntoBlocks(self,message,n):
         ''' This function is used to split the message into blocks according to the 
@@ -93,20 +100,35 @@ class CryptographyMD5():
 
     def __splitIntoWords(self,message,messageLength,finalBlock):
         ''' Split the chunks into 16 32-bit words'''
-        words = [0] * 16
-        splitted = self.__splitIntoBlocks(message,32)
+        message = self.__splitIntoBlocks(message, 32)
         if DEBUG_FLAG:
-            print('splitted=',splitted)
-        wordIndex = 0
-        for word in splitted:
-            for bit in word:
-                if bit == '1':
-                    words[wordIndex]|=1
-                words[wordIndex]<<=1
-            words[wordIndex]>>=1
-            wordIndex += 1
+            print('message in word=',message)
+            print('message in length=',messageLength)
+        wordArray = [0] * 16
 
-        return words
+        wordIndex = 0
+        for word in message:
+            bytes = self.__splitIntoBlocks(word, 8)
+            tempByte = 0
+            powers = 0
+
+            for byte in bytes:
+                tempByte = wordArray[wordIndex]
+                tempByte = tempByte | int(byte, 2) << powers
+                powers += 8
+                wordArray[wordIndex] = tempByte
+            
+            wordIndex += 1
+            powers = 0
+
+        ## correct last two bytes if we're on the final block
+        if finalBlock:
+            wordArray[-2] = messageLength << 3
+            wordArray[-1] = messageLength >> 29
+        if DEBUG_FLAG:
+            print('wordArray=',wordArray)
+
+        return wordArray
 
     def __toBinaryString(self,message):
         ''' Converts a given string into a binary form'''
@@ -118,7 +140,7 @@ class CryptographyMD5():
 
     def __hash(self,message):
         '''The main hashing function'''
-        messageLength = len(message.encode('utf-8')*8)
+        messageLength = len(message.encode('utf-8'))
         chunks = self.__splitIntoBlocks(
                  self.__pad(
                  self.__toBinaryString(message))
@@ -135,6 +157,8 @@ class CryptographyMD5():
             c = self.__C
             d = self.__D
 
+            if DEBUG_FLAG:
+                print('a=',hex(a),'b=',hex(b),'c=',hex(c),'d=',hex(d))
             F = 0
             g = 0
             for i in range(64):
@@ -152,17 +176,24 @@ class CryptographyMD5():
                     g = (7*i)%16
                 else:
                     raise NotImplementedError
-                F = F + a + self.__K[i] + words[g]
+                if False:
+                    print('i = ',i,'g=',g)
+                F = (F + a + self.__K[i] + words[g]) & self.__mask
+                F = (self.__leftrotate(F,self.__S[i]) + b) & self.__mask
                 a = d
                 d = c
                 c = b
-                b = b + self.__leftrotate(F,self.__S[i])
+                b = F
+                if DEBUG_FLAG:
+                    print(print('a=',hex(a),'b=',hex(b),'c=',hex(c),'d=',hex(d)))
 
             # add masks to suppress upper bits
             self.__A = (a + self.__A) & 0xffffffff
             self.__B = (b + self.__B) & 0xffffffff
             self.__C = (c + self.__C) & 0xffffffff
             self.__D = (d + self.__D) & 0xffffffff
+            if DEBUG_FLAG:
+                print('SELF','a=',hex(self.__A),'b=',hex(self.__B),'c=',hex(self.__C),'d=',hex(self.__D))
 
     def __digest(self, message):
         self.__hash(message)
@@ -172,9 +203,30 @@ class CryptographyMD5():
             print("B=",self.__B,"digest=",self.__hexdigest(self.__B))
             print("C=",self.__C,"digest=",self.__hexdigest(self.__C))
             print("D=",self.__D,"digest=",self.__hexdigest(self.__D))
-        digestMessage = self.__hexdigest(self.__A) + self.__hexdigest(self.__B) + self.__hexdigest(self.__C) + self.__hexdigest(self.__D)
+        digestMessage = self.__littleHexDigest(self.__A) + self.__littleHexDigest(self.__B) + self.__littleHexDigest(self.__C) + self.__littleHexDigest(self.__D)
+        digsetMessage = digestMessage.upper()
 
         return digestMessage
+
+    def __littleHexDigest(self,number:int)->str:
+        '''returns little endian hex digest'''
+        res = b''
+        numList = [];
+        bufferbytes = []
+        b = bin(number).replace('b', '0')
+        b = "0"*(34-len(b)) + b # pad leading zero if missing
+
+        bufferbytes.append(int(b[ 2:10],2))
+        bufferbytes.append(int(b[10:18],2))
+        bufferbytes.append(int(b[18:26],2))
+        bufferbytes.append(int(b[26:34],2))
+
+        res += bytes([bufferbytes[3]])
+        res += bytes([bufferbytes[2]])
+        res += bytes([bufferbytes[1]])
+        res += bytes([bufferbytes[0]])
+
+        return ''.join(["{:02x}".format(byte) for byte in bytearray(res)])
 
     def __hexdigest(self,number:int)-> str:
         ''' returns hex form of an integer value, for example:
@@ -203,4 +255,4 @@ if __name__ =='__main__':
     print('MD5 by our function:',digest)
     hashlibMD5 = hashlib.md5()
     hashlibMD5.update(message.encode('utf-8'))
-    print('MD5 by hashlib     :',hashlibMD5.hexdigest().upper())
+    print('MD5 by hashlib     :',hashlibMD5.hexdigest())
