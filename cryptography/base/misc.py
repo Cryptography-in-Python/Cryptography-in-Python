@@ -95,11 +95,14 @@ def check_variables(*variables):
         return inner
     return mid_level_wrapper
 
-def check_input_size(variable_size=64, index=1):
+def check_input_size(variable_size=64, index=1, type=int):
     def mid_level_wrapper(func):
         def inner(*args, **kwargs):
-            assert args[index-1].bit_length() == variable_size, "the argument does not have the declared size"
-            return func(self, *args, **kwargs)
+            if type == int:
+                assert args[index-1].bit_length() == variable_size, "the argument does not have the declared size"
+            elif type == str:
+                assert len(args[index-1]) == variable_size, "the argument does not have the declared size"
+            return func(*args, **kwargs)
         return inner
     return mid_level_wrapper
 

@@ -161,52 +161,106 @@ S_BOX_INPUT_SIZE_DES  = 6
 HALF_ROUND_KEY_SIZE_DES = 28
 FULL_KEY_SIZE_DES       = 64
 
-@check_input_size(variable_size=S_BOX_INPUT_SIZE_DES, index=1)
-def _lookup_s_box(value:int, s_box_stage:int) -> bitarray:
+DES_PLAINTEXT_BLOCK_SIZE      = 64
+DES_HALF_PLAINTEXT_BLOCK_SIZE = 32
+
+def to_bin(number:int, bit_length:int) -> str:
+    return bin(number)[2:].zfill(bit_length)
+
+def rotate_left_str(number:str, bits_rotate:int) -> str:
+    return number[bits_rotate:] + number[:bits_rotate] 
+
+def rotate_right_str(number:str, bits_rotate:int) -> str:
+    return number[-bits_rotate:] + number[:-bits_rotate]
+
+def split_bits(number:str, block_size:int) -> [str]:
+    return [number[index:index+block_size] for index in range(0, len(number), block_size)]
+
+def mix_number_by_table(number:str, table:np.array, input_size:int) -> str:
+    if len(number) < input_size:
+        number = number.zfill(input_size)
+    result   = ""
+
+    for element in table:
+        result += number[element]
+    return result
+
+@check_input_size(variable_size=S_BOX_INPUT_SIZE_DES, index=1, type=str)
+def _lookup_s_box(value:str, s_box_stage:int) -> str:
     '''
     help locate the value's mapping in s boxes
     '''
-    first_last_cmb = (value >> 5) << 1 | (value & 0b1)
-    middle_section = value & 0b011110
+    first_last_cmb = int(value[0] + value[-1], base=2)
+    middle_section = int(value[1:5]          , base=2)
     new_value      = _s_box_tables[s_box_stage][first_last_cmb][middle_section]
 
-    return pad_int(new_value, S_BOX_OUTPUT_SIZE_DES)
+    return bin(new_value)[2:].zfill(S_BOX_OUTPUT_SIZE_DES)
 
-def f_function(plain_text_slice:bitarray, part_of_key:bitarray) -> bitarray:
+@check_input_size(variable_size=F_FUNCTION_OUTPUT_LENGTH_DES, index=1, type=str)
+def f_function(plain_text_slice:str, part_of_key:str) -> int:
     '''
     the f function, the core of DES
     '''
-    # perform expansion
-    empty_array = bitarray()
-    for member in _expansion_table:
-        empty_array.append(plain_text_slice[member])
+    after_expansion = mix_number_by_table(plain_text_slice, _expansion_table, PRE_EXPANSION_LENGTH_DES)
+    mixure = int(after_expansion, base=2) ^ int(part_of_key, base=2)
+    mixure = to_bin(mixure, 48)
 
-    #use XOR to mix with the key
-    #use S BOX to make the process non-linear
-    eight_bit_slices = list(split_data_to_every_n_bits(empty_array ^ part_of_key, S_BOX_INPUT_SIZE_DES))
-    pst_s_box_result = bitarray()
-
-    for index, member in enumerate(eight_bit_slices):
-        pst_s_box_result.extend(_lookup_s_box(member, index))
-
-    #use permutation table to squeeze the result back to 32 bit
-    final_result = bitarray()
-    for member in _p_replacement_table:
-        final_result.append(pst_s_box_result[member])
+    temp_results = []
+    for stage, member in enumerate(split_bits(mixure, S_BOX_INPUT_SIZE_DES)):
+        temp_results.append(_lookup_s_box(member, stage))
     
-    return final_result
+    return mix_number_by_table("".join(temp_results), _p_replacement_table, 32)
+    
 
-@check_input_size(variable_size=64, index=1)
-def generate_subkeys(key:int, decrypt=False) -> [int]:
+@check_input_size(variable_size=FULL_KEY_SIZE_DES, index=1, type=str)
+def generate_subkeys(key:str, decrypt=False) -> [int]:
     '''
     generate 16 round keys
     '''
+    subkeys = []
+    left_key  = mix_number_by_table(key, _permutation_choice_one_left,  FULL_KEY_SIZE_DES)
+    right_key = mix_number_by_table(key, _permutation_choice_one_right, FULL_KEY_SIZE_DES)
 
+    for index in range(16):
+       left_key  = rotate_left_str(left_key,  _shift_bits_table[index+1])
+       right_key = rotate_left_str(right_key, _shift_bits_table[index+1])
+       temp_key  = mix_number_by_table(left_key + right_key, _permutation_choice_two, FULL_KEY_SIZE_DES)
+       subkeys.append(temp_key)
+
+    return subkeys
+
+@check_input_size(variable_size=DES_PLAINTEXT_BLOCK_SIZE, index=1, type=str)
+def encrypt_block(plain_text:str, subkeys:[str]) -> str:
+    after_init_permutation = mix_number_by_table(plain_text, _initial_permutation_table, DES_PLAINTEXT_BLOCK_SIZE)
+    left_init  = after_init_permutation[DES_HALF_PLAINTEXT_BLOCK_SIZE:] 
+    right_init = after_init_permutation[:DES_HALF_PLAINTEXT_BLOCK_SIZE]
+
+    for stage, key in enumerate(subkeys):
+        temp = f_function(right_init, key)
+        temp_left = int(left_init, base=2) ^ int(temp, base=2)
+        temp_left = to_bin(temp_left, DES_HALF_PLAINTEXT_BLOCK_SIZE)
+
+        if stage < 15:
+            left_init, right_init = right_init, temp_left
+        else:
+            left_init = temp_left
     
+    return mix_number_by_table(left_init + right_init, _final_permutation_table, DES_PLAINTEXT_BLOCK_SIZE)
 
-def permutation_mapping(bit_array:bitarray, inverse=False) -> bitarray:
-    result = bitarray()
-    table  = _initial_permutation_table if not inverse else _final_permutation_table
-    for member in table:
-        result.append(bit_array[member])
-    return result
+@check_input_size(variable_size=DES_PLAINTEXT_BLOCK_SIZE, index=1, type=str)
+def decrypt_block(plain_text:str, subkeys:[str]) -> str:
+    after_init_permutation = mix_number_by_table(plain_text, _final_permutation_table, DES_PLAINTEXT_BLOCK_SIZE)
+    left_init  = after_init_permutation[DES_HALF_PLAINTEXT_BLOCK_SIZE:] 
+    right_init = after_init_permutation[:DES_HALF_PLAINTEXT_BLOCK_SIZE]
+
+    for stage, key in enumerate(subkeys[::-1]):
+        temp = f_function(right_init, key)
+        temp_left = int(left_init, base=2) ^ int(temp, base=2)
+        temp_left = to_bin(temp_left, DES_HALF_PLAINTEXT_BLOCK_SIZE)
+
+        if stage < 15:
+            left_init, right_init = right_init, temp_left
+        else:
+            left_init, right_init = temp_left, right_init
+    
+    return mix_number_by_table(left_init + right_init, _initial_permutation_table, DES_PLAINTEXT_BLOCK_SIZE)
