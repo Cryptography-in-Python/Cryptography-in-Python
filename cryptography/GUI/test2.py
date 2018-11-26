@@ -4,12 +4,16 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QPushButton,
                              QComboBox, QApplication, QPlainTextEdit)
 
 from PyQt5.QtCore import pyqtSlot
-from AES import cryptography_aes128
-from DES import cryptography_des
-from RSA import cryptography_rsa
-from MD5 import cryptography_md5
-from sha1 import *
+
 import sys
+import os
+sys.path.append(os.path.abspath('../AES'))
+
+from ..AES import cryptography_aes128
+from ..DES import cryptography_des
+from ..RSA import cryptography_rsa
+from ..MD5 import cryptography_md5
+from ..sha1 import *
 
 
 class Example(QWidget):
@@ -82,13 +86,13 @@ class Example(QWidget):
         print(f'start encription using {self.__algorithm}.')
         instance = None
         if self.__algorithm == "AES":
-            instance = cryptography_aes128()
+            instance = cryptography_aes128.CryptographyAES128()
         elif self.__algorithm == "DES" :
-            instance = cryptography_des()
+            instance = cryptography_des.CryptographyDES()
         elif self.__algorithm == "RSA" :
-            instance = cryptography_rsa()
+            instance = cryptography_rsa.cryptography_rsa()
         elif self.__algorithm == "MD5" :
-            instance == cryptography_md5
+            instance == cryptography_md5.cryptography_md5()
         elif self.__algorithm == "SHA1" :
             pass
         
