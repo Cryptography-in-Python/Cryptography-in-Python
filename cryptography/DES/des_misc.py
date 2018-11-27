@@ -179,6 +179,8 @@ def split_bits(number:str, block_size:int) -> [str]:
 def mix_number_by_table(number:str, table:np.array, input_size:int) -> str:
     if len(number) < input_size:
         number = number.zfill(input_size)
+    elif len(number) > input_size:
+        raise ValueError("Number is longer than the input size")
     result   = ""
 
     for element in table:
@@ -194,7 +196,7 @@ def _lookup_s_box(value:str, s_box_stage:int) -> str:
     middle_section = int(value[1:5]          , base=2)
     new_value      = _s_box_tables[s_box_stage][first_last_cmb][middle_section]
 
-    return bin(new_value)[2:].zfill(S_BOX_OUTPUT_SIZE_DES)
+    return to_bin(new_value, S_BOX_OUTPUT_SIZE_DES)
 
 @check_input_size(variable_size=F_FUNCTION_OUTPUT_LENGTH_DES, index=1, type=str)
 def f_function(plain_text_slice:str, part_of_key:str) -> int:
@@ -203,7 +205,7 @@ def f_function(plain_text_slice:str, part_of_key:str) -> int:
     '''
     after_expansion = mix_number_by_table(plain_text_slice, _expansion_table, PRE_EXPANSION_LENGTH_DES)
     mixure = int(after_expansion, base=2) ^ int(part_of_key, base=2)
-    mixure = to_bin(mixure, 48)
+    mixure = to_bin(mixure, POST_EXPANSION_LENGTH_DES)
 
     temp_results = []
     for stage, member in enumerate(split_bits(mixure, S_BOX_INPUT_SIZE_DES)):
@@ -221,7 +223,7 @@ def generate_subkeys(key:str, decrypt=False) -> [int]:
     left_key  = mix_number_by_table(key, _permutation_choice_one_left,  FULL_KEY_SIZE_DES)
     right_key = mix_number_by_table(key, _permutation_choice_one_right, FULL_KEY_SIZE_DES)
 
-    for index in range(16):
+    for index in range(NUMBER_OF_SHIFTS_KEY_GEN_DES):
        left_key  = rotate_left_str(left_key,  _shift_bits_table[index+1])
        right_key = rotate_left_str(right_key, _shift_bits_table[index+1])
        temp_key  = mix_number_by_table(left_key + right_key, _permutation_choice_two, FULL_KEY_SIZE_DES)
@@ -240,7 +242,7 @@ def encrypt_block(plain_text:str, subkeys:[str]) -> str:
         temp_left = int(left_init, base=2) ^ int(temp, base=2)
         temp_left = to_bin(temp_left, DES_HALF_PLAINTEXT_BLOCK_SIZE)
 
-        if stage < 15:
+        if stage < NUMBER_OF_SHIFTS_KEY_GEN_DES - 1:
             left_init, right_init = right_init, temp_left
         else:
             left_init = temp_left
@@ -249,7 +251,7 @@ def encrypt_block(plain_text:str, subkeys:[str]) -> str:
 
 @check_input_size(variable_size=DES_PLAINTEXT_BLOCK_SIZE, index=1, type=str)
 def decrypt_block(plain_text:str, subkeys:[str]) -> str:
-    after_init_permutation = mix_number_by_table(plain_text, _final_permutation_table, DES_PLAINTEXT_BLOCK_SIZE)
+    after_init_permutation = mix_number_by_table(plain_text, _initial_permutation_table, DES_PLAINTEXT_BLOCK_SIZE)
     left_init  = after_init_permutation[DES_HALF_PLAINTEXT_BLOCK_SIZE:] 
     right_init = after_init_permutation[:DES_HALF_PLAINTEXT_BLOCK_SIZE]
 
@@ -263,4 +265,4 @@ def decrypt_block(plain_text:str, subkeys:[str]) -> str:
         else:
             left_init, right_init = temp_left, right_init
     
-    return mix_number_by_table(left_init + right_init, _initial_permutation_table, DES_PLAINTEXT_BLOCK_SIZE)
+    return mix_number_by_table(left_init + right_init, _final_permutation_table, DES_PLAINTEXT_BLOCK_SIZE)

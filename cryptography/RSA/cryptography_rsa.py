@@ -1,4 +1,6 @@
+import binascii
 import struct
+
 from ..base.cryptography_abstract import CryptographyBase
 from .rsa_misc                    import *
 from ..base.misc                  import *
@@ -52,16 +54,18 @@ class CryptographyRSA(CryptographyBase):
     def __repr__(self) -> str:
         return str(self)
 
-    @check_variables("_plain_text")
+    @check_variables("_cipher_text")
     def get_cipher_text(self) -> str:
-        return self._cipher_text
+        return self.get_cipher_text_as_bytes().hex()
 
     def set_cipher_text(self, cipher_text='') -> None:
-        if isinstance(cipher_text, bytes):
-            cipher_text = pad_to_fit_block(cipher_text, self._block_size)
+        if isinstance(cipher_text, str):
+            cipher_text = bytes.fromhex(cipher_text)
+        
+        cipher_text = pad_to_fit_block(cipher_text, self._block_size)
 
-            self._cipher_text = [int.from_bytes(cipher_text[index:index+self._block_size], byteorder=self._BYTEORDER)
-            for index in range(0, len(cipher_text), self._block_size)]
+        self._cipher_text = [int.from_bytes(cipher_text[index:index+self._block_size], byteorder=self._BYTEORDER)
+        for index in range(0, len(cipher_text), self._block_size)]
 
     def set_plain_text(self, plain_text='') -> None:
         if isinstance(plain_text, str):
@@ -111,9 +115,11 @@ if __name__ == "__main__":
     rsa_instance.set_key(key='initial')
     rsa_instance.set_plain_text("Nogizaka46")
     rsa_instance.encrypt()
-    result_enc = rsa_instance.get_cipher_text_as_bytes()
+    result_enc = rsa_instance.get_cipher_text()
+    print("Encryp Text:", result_enc)
+
     rsa_instance.set_cipher_text(result_enc)
     rsa_instance.decrypt()
 
     results = rsa_instance.get_plain_text_as_string()
-    print("Plain Text:")    
+    print("Plain Text:", results)    

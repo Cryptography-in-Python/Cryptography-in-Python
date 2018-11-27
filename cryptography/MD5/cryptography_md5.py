@@ -249,10 +249,17 @@ if __name__ =='__main__':
     Create tests for this file
     '''
     import hashlib
+    import time
     message = input('Please type the message you want to hash:')
     md5 = CryptographyMD5()
+    start = time.time()
     digest = md5.encrypt(message)
     print('MD5 by our function:',digest)
+    end = time.time()
+    print("Running Time: {:3f}".format(end-start))
     hashlibMD5 = hashlib.md5()
+    start = time.time()
     hashlibMD5.update(message.encode('utf-8'))
     print('MD5 by hashlib     :',hashlibMD5.hexdigest())
+    end = time.time()
+    print("Running Time: {:3f}".format(end-start))
