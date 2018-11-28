@@ -184,7 +184,7 @@ def pad_bytes(raw_bytes:bytes, block_size:int) -> bytes:
 
 def unpad_bytes(raw_bytes:bytes, block_size:int) -> bytes:
     pad_length = raw_bytes[-1]
-    if pad_length >= block_size:
+    if isinstance(pad_length, str) or pad_length >= block_size:
         return raw_bytes
     else:
         return raw_bytes[:-pad_length]

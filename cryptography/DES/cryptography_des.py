@@ -15,6 +15,7 @@ class CryptographyDES(CryptographyBase):
     def __init__(self):
         self._BLOCK_SIZE = 8
         self._WORK_MODE  = WORK_MODE_ECB
+        self._key_chain  = []
 
     def encrypt(self):
         '''
@@ -22,8 +23,6 @@ class CryptographyDES(CryptographyBase):
         '''
         if "_plain_text" not in self.__dict__:
             raise ValueError("A plain text needs to be provided")
-        if "_subkeys" not in self.__dict__:
-            raise ValueError("A user defined key needs to be provided")
 
         self._cipher_text = b''
 
@@ -31,7 +30,7 @@ class CryptographyDES(CryptographyBase):
             for index in range(0, len(self._plain_text), self._BLOCK_SIZE):  
                 output = process_block(
                     self._plain_text[index:index+self._BLOCK_SIZE], 
-                    self._subkeys,
+                    self._key_chain[0],
                     mode="ENCRYPT"
                 )
                 self._cipher_text += list_of_bin_to_bytes(output)
@@ -45,11 +44,35 @@ class CryptographyDES(CryptographyBase):
 
                 output = process_block(
                     input_block, 
-                    self._subkeys,
+                    self._key_chain[0],
                     mode="ENCRYPT"
                 )
                 mix_mix = output
                 self._cipher_text += list_of_bin_to_bytes(output)
+
+        elif self._WORK_MODE == WORK_MODE_TRIPLE_DES:
+            assert len(self._key_chain) == 3, "triple DES requires 3 keys"
+
+            first_layer_des = CryptographyDES()
+            first_layer_des.set_key(self._key_chain[0])
+
+            second_layer_des = CryptographyDES()
+            second_layer_des.set_key(self._key_chain[1])
+
+            third_layer_des  = CryptographyDES()
+            third_layer_des.set_key(self._key_chain[2])
+
+            first_layer_des.set_plain_text(self._plain_text)
+            first_layer_des.encrypt()
+            temp = first_layer_des.get_cipher_text_as_bytes()
+
+            second_layer_des.set_cipher_text(temp)
+            second_layer_des.decrypt()
+            temp = second_layer_des.get_plain_text_as_bytes()
+
+            third_layer_des.set_plain_text(temp)
+            third_layer_des.encrypt()
+            self._cipher_text = third_layer_des.get_cipher_text_as_bytes()
 
     def decrypt(self):
         self._plain_text = b''
@@ -58,7 +81,7 @@ class CryptographyDES(CryptographyBase):
             for index in range(0, len(self._cipher_text), self._BLOCK_SIZE): 
                 output = process_block(
                     self._cipher_text[index:index+self._BLOCK_SIZE], 
-                    self._subkeys,
+                    self._key_chain[0],
                     mode="DECRYPT"
                 )
                 self._plain_text += list_of_bin_to_bytes(output)
@@ -71,12 +94,36 @@ class CryptographyDES(CryptographyBase):
 
                 output= process_block(
                     input_block, 
-                    self._subkeys,
+                    self._key_chain[0],
                     mode="DECRYPT"
                 )
                 output  = list(map(lambda x, y: x ^ y, output, mix_mix))
                 mix_mix = input_block
                 self._plain_text += list_of_bin_to_bytes(output)
+
+        elif self._WORK_MODE == WORK_MODE_TRIPLE_DES:
+            assert len(self._key_chain) == 3, "triple DES requires 3 keys"
+
+            first_layer_des = CryptographyDES()
+            first_layer_des.set_key(self._key_chain[0])
+
+            second_layer_des = CryptographyDES()
+            second_layer_des.set_key(self._key_chain[1])
+
+            third_layer_des  = CryptographyDES()
+            third_layer_des.set_key(self._key_chain[2])
+
+            third_layer_des.set_cipher_text(self._cipher_text)
+            third_layer_des.decrypt()
+            temp = third_layer_des.get_plain_text_as_bytes()
+
+            second_layer_des.set_plain_text(temp)
+            second_layer_des.encrypt()
+            temp = second_layer_des.get_cipher_text_as_bytes()
+
+            first_layer_des.set_cipher_text(temp)
+            first_layer_des.decrypt()
+            self._plain_text = first_layer_des.get_plain_text()
 
         self._plain_text = unpad_bytes(self._plain_text, self._BLOCK_SIZE)
 
@@ -90,6 +137,8 @@ class CryptographyDES(CryptographyBase):
         return self._plain_text
 
     def get_plain_text(self) -> str:
+        if isinstance(self._plain_text, str):
+            return self._plain_text
         return self._plain_text.decode()
 
     def get_cipher_text(self) -> str:
@@ -108,9 +157,13 @@ class CryptographyDES(CryptographyBase):
         '''
         if isinstance(key, str):
             key = key.encode('ascii')
+
+        elif isinstance(key, list):
+            self._key_chain.append(key)
+            return
         
         key = pad_bytes(key, self._BLOCK_SIZE)
-        self._subkeys = generate_subkeys(key)
+        self._key_chain.append(generate_subkeys(key))
 
     def get_init_vector(self) -> [int]:
         if "_initialization_vector" not in self.__dict__:
@@ -118,7 +171,7 @@ class CryptographyDES(CryptographyBase):
         return self._initialization_vector
 
     def get_key(self):
-        return self._subkeys
+        return self._key_chain
 
     def __repr__(self):
         return "Some DES instance"
@@ -151,8 +204,10 @@ if __name__ == "__main__":
     des_instance = CryptographyDES()
     des_instance.set_plain_text(message)
     des_instance.set_key("Nogizaka")
-    des_instance.set_work_mode(WORK_MODE_CBC)
-    des_instance.get_init_vector()
+    des_instance.set_work_mode(WORK_MODE_TRIPLE_DES)
+    des_instance.set_key("ItoMarik")
+    des_instance.set_key("IkutaEri")
+    # des_instance.get_init_vector()
     des_instance.encrypt()
     hex_output = des_instance.get_cipher_text()
     des_instance.set_cipher_text(hex_output)
