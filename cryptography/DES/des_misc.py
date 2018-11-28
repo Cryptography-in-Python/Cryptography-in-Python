@@ -1,5 +1,11 @@
+try:
+    import secrets
+    randbits = secrets.randbits
+except ImportError:
+    import random
+    randbits = random.getrandbits
+
 import numpy as np
-from bitarray import bitarray
 
 from ..base.misc import *
 
@@ -164,6 +170,11 @@ FULL_KEY_SIZE_DES       = 64
 DES_PLAINTEXT_BLOCK_SIZE      = 64
 DES_HALF_PLAINTEXT_BLOCK_SIZE = 32
 
+def get_initialization_vector(size=DES_PLAINTEXT_BLOCK_SIZE) -> [int]:
+    vector_seed = randbits(size)
+    vector = [int(member) for member in bin(vector_seed)[2:].zfill(size)]
+    return vector
+
 def pad_bytes(raw_bytes:bytes, block_size:int) -> bytes:
     if len(raw_bytes) % block_size:
         pad_length = block_size - (len(raw_bytes) % block_size)
@@ -173,8 +184,10 @@ def pad_bytes(raw_bytes:bytes, block_size:int) -> bytes:
 
 def unpad_bytes(raw_bytes:bytes, block_size:int) -> bytes:
     pad_length = raw_bytes[-1]
-    print(pad_length)
-    return raw_bytes[:-pad_length]
+    if pad_length >= block_size:
+        return raw_bytes
+    else:
+        return raw_bytes[:-pad_length]
 
 def rotate_left(number:[int]) -> [int]:
     result = number
@@ -270,7 +283,9 @@ def process_block(plain_text:bytes, subkeys:[[int]], mode="ENCRYPT") -> bytes:
     '''
     process each plain text block. The block size should be 64bit/8bytes
     '''
-    plain_text = bytes_to_list_of_bin(plain_text)
+    if isinstance(plain_text, bytes):
+        plain_text = bytes_to_list_of_bin(plain_text)
+
     plain_text = mix_number_by_table(plain_text, _initial_permutation_table)
     left_block, right_block = plain_text[:32], plain_text[32:]
 
@@ -290,5 +305,5 @@ def process_block(plain_text:bytes, subkeys:[[int]], mode="ENCRYPT") -> bytes:
             left_block, right_block = right_block, left_block
 
     result = mix_number_by_table(left_block + right_block, _final_permutation_table)
-    return list_of_bin_to_bytes(result) 
+    return result
 
