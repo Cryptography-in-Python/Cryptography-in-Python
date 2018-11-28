@@ -1,6 +1,7 @@
-from ..base.misc                   import *
-from .des_misc                    import *
+from ..base.misc                  import *
 from ..base.cryptography_abstract import CryptographyBase
+
+from .des_misc                    import *
 
 WORK_MODE_ECB        = 0
 WORK_MODE_CBC        = 1
@@ -206,11 +207,12 @@ class CryptographyDES(CryptographyBase):
 
 if __name__ == "__main__":
     message = "Tell me, Senpai!"
+    key     = "Nogizaka" 
 
     # ===== Encryption ======
     des_instance = CryptographyDES()
     des_instance.set_plain_text(message)
-    des_instance.set_key("Nogizaka")
+    des_instance.set_key(key)
     des_instance.set_work_mode(WORK_MODE_CBC)
     vec = des_instance.get_init_vector()
     des_instance.encrypt()
@@ -220,7 +222,7 @@ if __name__ == "__main__":
 
     # ===== Decryption ======
     des_instance_b = CryptographyDES()
-    des_instance_b.set_key("Nogizaka")
+    des_instance_b.set_key(key)
     des_instance_b.set_work_mode(WORK_MODE_CBC)
     des_instance_b.set_cipher_text(hex_output)
     des_instance_b.set_init_vector(vec)
