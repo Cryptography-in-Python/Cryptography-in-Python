@@ -8,7 +8,7 @@ from ..base.misc                  import *
 
 class CryptographyRSA(CryptographyBase):
 
-    def __init__(self, key_length=1024):
+    def __init__(self, key_length=512):
         self._key_length = int(key_length / 2)
         self._block_size = int(key_length / 8)
 
