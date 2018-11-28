@@ -102,7 +102,7 @@ class CryptographyDES(CryptographyBase):
                 self._plain_text += list_of_bin_to_bytes(output)
 
         elif self._WORK_MODE == WORK_MODE_TRIPLE_DES:
-            assert len(self._key_chain) == 3, "triple DES requires 3 keys"
+            assert len(self._key_chain) == 3, "triple DES requires 3 keys ({} given)".format(len(self._key_chain))
 
             first_layer_des = CryptographyDES()
             first_layer_des.set_key(self._key_chain[0])
@@ -171,7 +171,7 @@ class CryptographyDES(CryptographyBase):
         return to_hex(list_of_bin_to_bytes(self._initialization_vector))
 
     def set_init_vector(self, init_vector:[int]):
-        raw_vector = from_hex(bytes_to_list_of_bin(init_vector))
+        raw_vector = bytes_to_list_of_bin(from_hex(init_vector))
         assert len(raw_vector) == CryptographyDES.BLOCK_SIZE
         self._initialization_vector = raw_vector
 
@@ -199,6 +199,7 @@ class CryptographyDES(CryptographyBase):
         del self._cipher_text
         del self._plain_text
         del self._initialization_vector
+        del self._key_chain[:]
         self._WORK_MODE  = WORK_MODE_ECB
         self._BLOCK_SIZE = 8
 
@@ -206,16 +207,22 @@ class CryptographyDES(CryptographyBase):
 if __name__ == "__main__":
     message = "Tell me, Senpai!"
 
+    # ===== Encryption ======
     des_instance = CryptographyDES()
     des_instance.set_plain_text(message)
     des_instance.set_key("Nogizaka")
     des_instance.set_work_mode(WORK_MODE_CBC)
-    des_instance.set_key("ItoMarik")
-    des_instance.set_key("IkutaEri")
-    des_instance.get_init_vector()
+    vec = des_instance.get_init_vector()
     des_instance.encrypt()
     hex_output = des_instance.get_cipher_text()
     print(hex_output)
-    des_instance.set_cipher_text(hex_output)
-    des_instance.decrypt()
-    print(des_instance.get_plain_text())
+    des_instance.clear()
+
+    # ===== Decryption ======
+    des_instance_b = CryptographyDES()
+    des_instance_b.set_key("Nogizaka")
+    des_instance_b.set_work_mode(WORK_MODE_CBC)
+    des_instance_b.set_cipher_text(hex_output)
+    des_instance_b.set_init_vector(vec)
+    des_instance_b.decrypt()
+    print(des_instance_b.get_plain_text())
