@@ -226,3 +226,4 @@ if __name__ == "__main__":
     des_instance_b.set_init_vector(vec)
     des_instance_b.decrypt()
     print(des_instance_b.get_plain_text())
+
