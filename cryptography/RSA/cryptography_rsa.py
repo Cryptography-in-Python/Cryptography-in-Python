@@ -8,7 +8,7 @@ from ..base.misc                  import *
 
 class CryptographyRSA(CryptographyBase):
 
-    def __init__(self, key_length=512):
+    def __init__(self, key_length=1024):
         self._key_length = int(key_length / 2)
         self._block_size = int(key_length / 8)
 
@@ -56,11 +56,11 @@ class CryptographyRSA(CryptographyBase):
 
     @check_variables("_cipher_text")
     def get_cipher_text(self) -> str:
-        return self.get_cipher_text_as_bytes().hex()
+        return to_hex(self.get_cipher_text_as_bytes())
 
     def set_cipher_text(self, cipher_text='') -> None:
         if isinstance(cipher_text, str):
-            cipher_text = bytes.fromhex(cipher_text)
+            cipher_text = from_hex(cipher_text)
         
         cipher_text = pad_to_fit_block(cipher_text, self._block_size)
 
@@ -113,7 +113,7 @@ class CryptographyRSA(CryptographyBase):
 if __name__ == "__main__":
     rsa_instance = CryptographyRSA()
     rsa_instance.set_key(key='initial')
-    rsa_instance.set_plain_text("Nogizaka46")
+    rsa_instance.set_plain_text("Tell me, Senpai!")
     rsa_instance.encrypt()
     result_enc = rsa_instance.get_cipher_text()
     print("Encryp Text:", result_enc)

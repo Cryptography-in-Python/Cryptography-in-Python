@@ -1,3 +1,4 @@
+import binascii
 import struct
 
 from bitarray import bitarray
@@ -82,6 +83,17 @@ def hexdigest(number:int)-> str:
         temp = this_hex[2].upper() + temp 
     return temp
 
+def to_hex(byte_str:bytes) -> str:
+    try:
+        return byte_str.hex()
+    except AttributeError:
+        return binascii.hexlify(byte_str)
+
+def from_hex(hex_str:str) -> bytes:
+    try:
+        return hex_str.from_hex()
+    except AttributeError:
+        return binascii.unhexlify(hex_str)
 
 # ======================= Function Tools ===========================
 def check_variables(*variables):

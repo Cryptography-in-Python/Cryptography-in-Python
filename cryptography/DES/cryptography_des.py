@@ -93,7 +93,7 @@ class CryptographyDES(CryptographyBase):
         return self._plain_text.decode()
 
     def get_cipher_text(self) -> str:
-        return self._cipher_text.hex()
+        return to_hex(self._cipher_text)
 
     def get_cipher_text_as_bytes(self) -> bytes:
         return self._cipher_text
@@ -114,7 +114,7 @@ class CryptographyDES(CryptographyBase):
 
     def get_init_vector(self) -> [int]:
         if "_initialization_vector" not in self.__dict__:
-            self._initialization_vector = get_initialization_vector()
+            self._initialization_vector = get_initialization_vector(CryptographyDES.BLOCK_SIZE)
         return self._initialization_vector
 
     def get_key(self):
@@ -132,7 +132,7 @@ class CryptographyDES(CryptographyBase):
 
     def set_cipher_text(self, cipher_text=''):
         if isinstance(cipher_text, str):
-            cipher_text = bytes.fromhex(cipher_text)
+            cipher_text = from_hex(cipher_text)
         
         cipher_text = pad_bytes(cipher_text, self._BLOCK_SIZE)
         self._cipher_text = cipher_text
@@ -158,4 +158,3 @@ if __name__ == "__main__":
     des_instance.set_cipher_text(hex_output)
     des_instance.decrypt()
     print(des_instance.get_plain_text())
-
