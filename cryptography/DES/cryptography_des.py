@@ -168,7 +168,12 @@ class CryptographyDES(CryptographyBase):
     def get_init_vector(self) -> [int]:
         if "_initialization_vector" not in self.__dict__:
             self._initialization_vector = get_initialization_vector(CryptographyDES.BLOCK_SIZE)
-        return self._initialization_vector
+        return to_hex(list_of_bin_to_bytes(self._initialization_vector))
+
+    def set_init_vector(self, init_vector:[int]):
+        raw_vector = from_hex(bytes_to_list_of_bin(init_vector))
+        assert len(raw_vector) == CryptographyDES.BLOCK_SIZE
+        self._initialization_vector = raw_vector
 
     def get_key(self):
         return self._key_chain
@@ -204,12 +209,13 @@ if __name__ == "__main__":
     des_instance = CryptographyDES()
     des_instance.set_plain_text(message)
     des_instance.set_key("Nogizaka")
-    des_instance.set_work_mode(WORK_MODE_TRIPLE_DES)
+    des_instance.set_work_mode(WORK_MODE_CBC)
     des_instance.set_key("ItoMarik")
     des_instance.set_key("IkutaEri")
-    # des_instance.get_init_vector()
+    des_instance.get_init_vector()
     des_instance.encrypt()
     hex_output = des_instance.get_cipher_text()
+    print(hex_output)
     des_instance.set_cipher_text(hex_output)
     des_instance.decrypt()
     print(des_instance.get_plain_text())
