@@ -187,9 +187,10 @@ class CryptographyDES(CryptographyBase):
         self._ENCODING = encoding
 
     def __repr__(self):
-        return "<CryptographyDES | Work_Mode={} | Encode={}>".format(
+        return "<CryptographyDES | Work_Mode={} | Encode={} | Address={}>".format(
             CryptographyDES.ALL_WORK_MODES[self._WORK_MODE], 
-            self._ENCODING
+            self._ENCODING,
+            hex(id(self))
         )
 
     def __str__(self):
