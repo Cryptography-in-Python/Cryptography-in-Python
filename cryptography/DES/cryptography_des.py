@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from ..base.misc                  import *
 from ..base.cryptography_abstract import CryptographyBase
 
@@ -16,6 +18,7 @@ class CryptographyDES(CryptographyBase):
     def __init__(self):
         self._BLOCK_SIZE = 8
         self._WORK_MODE  = WORK_MODE_ECB
+        self._ENCODING   = 'utf-8'
         self._key_chain  = []
 
     def encrypt(self):
@@ -130,7 +133,7 @@ class CryptographyDES(CryptographyBase):
 
     def set_plain_text(self, plain_text='') -> None:
         if isinstance(plain_text, str):
-            plain_text = plain_text.encode('ascii')
+            plain_text = plain_text.encode(self._ENCODING)
         
         self._plain_text = pad_bytes(plain_text, self._BLOCK_SIZE)
 
@@ -157,7 +160,7 @@ class CryptographyDES(CryptographyBase):
         set the keys from users
         '''
         if isinstance(key, str):
-            key = key.encode('ascii')
+            key = key.encode(self._ENCODING)
 
         elif isinstance(key, list):
             self._key_chain.append(key)
@@ -206,26 +209,38 @@ class CryptographyDES(CryptographyBase):
 
 
 if __name__ == "__main__":
-    message = "Tell me, Senpai!"
-    key     = "Nogizaka" 
+    message =\
+    (
+    "Suzukake no ki no michi de 'kimi no hohoemi wo yume ni miru' to itte shimattara"
+    "bokutachi no kankei ha do kawatte shimau no ka, bokunari ni nannichi ka kangaeta"
+    "ue de no yaya kihazukashii ketsuron no yo na mono "
+    )
+
+    message_non_english =\
+    (
+    "鈴懸の木の道で『君の微笑みを夢に見る』と言ってしまったら僕たちの関係はどう変わってしまうのか、"
+    "僕なりに何日か考えた上でのやや気恥ずかしい結論のようなもの"
+    )
+    key             = "Nogizaka"
+    key_non_english = "乃木坂"
 
     # ===== Encryption ======
     des_instance = CryptographyDES()
-    des_instance.set_plain_text(message)
-    des_instance.set_key(key)
+    des_instance.set_plain_text(message_non_english)
+    des_instance.set_key(key_non_english)
     des_instance.set_work_mode(WORK_MODE_CBC)
     vec = des_instance.get_init_vector()
     des_instance.encrypt()
     hex_output = des_instance.get_cipher_text()
-    print(hex_output)
+    print("Hex Encrypted Text:", hex_output)
     des_instance.clear()
 
     # ===== Decryption ======
     des_instance_b = CryptographyDES()
-    des_instance_b.set_key(key)
+    des_instance_b.set_key(key_non_english)
     des_instance_b.set_work_mode(WORK_MODE_CBC)
     des_instance_b.set_cipher_text(hex_output)
     des_instance_b.set_init_vector(vec)
     des_instance_b.decrypt()
-    print(des_instance_b.get_plain_text())
+    print("Decrypted Message:", des_instance_b.get_plain_text())
 

@@ -205,28 +205,21 @@ def bytes_to_list_of_bin(input_bytes:bytes) -> [int]:
     result = [0] * len(input_bytes) * 8
     cursor = 0
     for ch in input_bytes:
-        i = 7
-        while i >= 0:
-            if ch & (1 << i) != 0:
-                result[cursor] = 1
-            else:
-                result[cursor] = 0
+        for i in range(7, -1, -1):
+            result[cursor] = int(ch & (1 << i) != 0)
             cursor += 1
-            i -= 1
 
     return result
 
 def list_of_bin_to_bytes(input_bytes:[int]) -> bytes:
     result = []
-    cursor = 0
     c = 0
-    while cursor < len(input_bytes):
+    for cursor in range(len(input_bytes)):
         c += input_bytes[cursor] << (7 - (cursor % 8))
 
         if (cursor % 8) == 7:
             result.append(c)
             c = 0
-        cursor += 1
     
     return bytes(result)
 
