@@ -11,9 +11,10 @@ WORK_MODE_TRIPLE_DES = 2
 
 class CryptographyDES(CryptographyBase):
 
-    BLOCK_SIZE    = 64
-    HALF_BLOCK    = 32
-    EXCHANGE_NUM  = 16
+    BLOCK_SIZE     = 64
+    HALF_BLOCK     = 32
+    EXCHANGE_NUM   = 16
+    ALL_WORK_MODES = {value:key for key, value in globals().items() if key.startswith("WORK_MODE")}
 
     def __init__(self):
         self._BLOCK_SIZE = 8
@@ -186,8 +187,10 @@ class CryptographyDES(CryptographyBase):
         self._ENCODING = encoding
 
     def __repr__(self):
-        work_modes = {value:key for key, value in globals().items() if key.startswith("WORK_MODE")}
-        return "<CryptographyDES | Work_Mode={} | Encode={}>".format(work_modes[self._WORK_MODE], self._ENCODING)
+        return "<CryptographyDES | Work_Mode={} | Encode={}>".format(
+            CryptographyDES.ALL_WORK_MODES[self._WORK_MODE], 
+            self._ENCODING
+        )
 
     def __str__(self):
         return repr(self)
