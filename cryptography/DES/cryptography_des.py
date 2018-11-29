@@ -182,8 +182,12 @@ class CryptographyDES(CryptographyBase):
     def get_key(self):
         return self._key_chain
 
+    def set_encoding(self, encoding='utf-8'):
+        self._ENCODING = encoding
+
     def __repr__(self):
-        return "Some DES instance"
+        work_modes = {value:key for key, value in globals().items() if key.startswith("WORK_MODE")}
+        return "<CryptographyDES | Work_Mode={} | Encode={}>".format(work_modes[self._WORK_MODE], self._ENCODING)
 
     def __str__(self):
         return repr(self)
@@ -216,18 +220,12 @@ if __name__ == "__main__":
     "ue de no yaya kihazukashii ketsuron no yo na mono "
     )
 
-    message_non_english =\
-    (
-    "鈴懸の木の道で『君の微笑みを夢に見る』と言ってしまったら僕たちの関係はどう変わってしまうのか、"
-    "僕なりに何日か考えた上でのやや気恥ずかしい結論のようなもの"
-    )
-    key             = "Nogizaka"
-    key_non_english = "乃木坂"
+    key = "Nogizaka"
 
     # ===== Encryption ======
     des_instance = CryptographyDES()
-    des_instance.set_plain_text(message_non_english)
-    des_instance.set_key(key_non_english)
+    des_instance.set_plain_text(message)
+    des_instance.set_key(key)
     des_instance.set_work_mode(WORK_MODE_CBC)
     vec = des_instance.get_init_vector()
     des_instance.encrypt()
@@ -237,10 +235,11 @@ if __name__ == "__main__":
 
     # ===== Decryption ======
     des_instance_b = CryptographyDES()
-    des_instance_b.set_key(key_non_english)
+    des_instance_b.set_key(key)
     des_instance_b.set_work_mode(WORK_MODE_CBC)
     des_instance_b.set_cipher_text(hex_output)
     des_instance_b.set_init_vector(vec)
     des_instance_b.decrypt()
+    print(des_instance)
     print("Decrypted Message:", des_instance_b.get_plain_text())
 
