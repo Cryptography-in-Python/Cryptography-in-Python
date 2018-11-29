@@ -153,7 +153,7 @@ class CryptographyDES(CryptographyBase):
         return self._cipher_text
 
     def set_work_mode(self, work_mode:int):
-        assert work_mode in (WORK_MODE_ECB, WORK_MODE_CBC, WORK_MODE_TRIPLE_DES), "invalid work mode! (ECB|CBC|TRIPLE_DES)"
+        assert work_mode in CryptographyDES.ALL_WORK_MODES, "invalid work mode! (ECB|CBC|TRIPLE_DES)"
         self._WORK_MODE = work_mode
 
     def set_key(self, key:'a key, can be str, bytes or bitarray') -> None:
@@ -244,6 +244,6 @@ if __name__ == "__main__":
     des_instance_b.set_cipher_text(hex_output)
     des_instance_b.set_init_vector(vec)
     des_instance_b.decrypt()
-    print(des_instance)
+    print(des_instance_b)
     print("Decrypted Message:", des_instance_b.get_plain_text())
 
