@@ -12,6 +12,7 @@ _des = Extension(
     '_des',
     sources=files,
     libraries=['boost_python3'],
+    extra_compile_args=['-std=c++11']
 )
 
 setup(
