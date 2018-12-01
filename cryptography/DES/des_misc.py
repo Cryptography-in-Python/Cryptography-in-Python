@@ -171,9 +171,7 @@ DES_PLAINTEXT_BLOCK_SIZE      = 64
 DES_HALF_PLAINTEXT_BLOCK_SIZE = 32
 
 def get_initialization_vector(size=DES_PLAINTEXT_BLOCK_SIZE) -> [int]:
-    vector_seed = randbits(size)
-    vector = [int(member) for member in bin(vector_seed)[2:].zfill(size)]
-    return vector
+    return randbits(size)
 
 def pad_bytes(raw_bytes:bytes, block_size:int) -> bytes:
     if len(raw_bytes) % block_size:
@@ -227,10 +225,9 @@ def _lookup_s_box(value:[int], s_box_stage:int) -> str:
     '''
     help locate the value's mapping in s boxes
     '''
-    # print(value)
+    # print("sbox in ", s_box_stage, value)
     first_last_cmb = value[0] << 1 | value[-1]
     middle_section = value[1] << 3 | value[2] << 2 | value[3] << 1 | value[4]
-
     value_from_box = _s_box_tables[s_box_stage][first_last_cmb][middle_section]
     return [
         (value_from_box & 8) >> 3,
@@ -246,12 +243,11 @@ def f_function(plain_text_slice:[int], part_of_key:[int]) -> [int]:
     '''
     plain_text_slice = mix_number_by_table(plain_text_slice, _expansion_table)
     plain_text_slice = list(map(lambda x, y: x ^ y, plain_text_slice, part_of_key))
-
     s_box_inputs = [plain_text_slice[i:i+S_BOX_INPUT_SIZE_DES] for i in range(0, len(plain_text_slice), S_BOX_INPUT_SIZE_DES)]
     result       = []
     for index, inputs in enumerate(s_box_inputs):
         result.extend(_lookup_s_box(inputs, index))
-
+    # print("after p", mix_number_by_table(result, _p_replacement_table))
     return mix_number_by_table(result, _p_replacement_table)
     
 
@@ -269,7 +265,6 @@ def generate_subkeys(key:bytes, decrypt=False) -> [[int]]:
             right_key = rotate_left(right_key)
 
         subkeys.append(mix_number_by_table(left_key + right_key, _permutation_choice_two))
-
     return subkeys
 
 def process_block(plain_text:bytes, subkeys:[[int]], mode="ENCRYPT") -> bytes:
@@ -298,5 +293,6 @@ def process_block(plain_text:bytes, subkeys:[[int]], mode="ENCRYPT") -> bytes:
             left_block, right_block = right_block, left_block
 
     result = mix_number_by_table(left_block + right_block, _final_permutation_table)
+    print(result)
     return result
 

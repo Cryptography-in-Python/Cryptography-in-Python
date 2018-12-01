@@ -4,4 +4,5 @@ python:
   - "3.6"
 install:
   - pip install -r requirements.txt
+  - sudo apt-get install libboost-all-dev
 script: bash smoke_test.sh

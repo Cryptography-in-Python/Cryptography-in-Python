@@ -1,3 +1,4 @@
 *pyc
 *o
-cryptography/DES/pyDES.py
+cryptography/DES/file_encryptor.py
+*.jpg

@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+import time
 
-from ..base.misc                  import *
-from ..base.cryptography_abstract import CryptographyBase
-
+from _des import _DES
 from .des_misc                    import *
+
+from ..base.cryptography_abstract import CryptographyBase
 
 WORK_MODE_ECB        = 0
 WORK_MODE_CBC        = 1
@@ -22,6 +23,8 @@ class CryptographyDES(CryptographyBase):
         self._ENCODING   = 'utf-8'
         self._key_chain  = []
 
+        self._kernel     = _DES()
+
     def encrypt(self):
         '''
         encrypt the message with DES
@@ -32,103 +35,97 @@ class CryptographyDES(CryptographyBase):
         self._cipher_text = b''
 
         if self._WORK_MODE == WORK_MODE_ECB: 
-            for index in range(0, len(self._plain_text), self._BLOCK_SIZE):  
-                output = process_block(
+            for index in range(0, len(self._plain_text), self._BLOCK_SIZE): 
+                data   = int.from_bytes(
                     self._plain_text[index:index+self._BLOCK_SIZE], 
-                    self._key_chain[0],
-                    mode="ENCRYPT"
+                    byteorder="big"
                 )
-                self._cipher_text += list_of_bin_to_bytes(output)
+                output = self._kernel.encrypt(data)
+                self._cipher_text += output.to_bytes(8, byteorder="big")
 
         elif self._WORK_MODE == WORK_MODE_CBC:
             assert "_initialization_vector" in self.__dict__
             mix_mix = self._initialization_vector
             for index in range(0, len(self._plain_text), self._BLOCK_SIZE): 
-                input_block = bytes_to_list_of_bin(self._plain_text[index:index+self._BLOCK_SIZE]) 
-                input_block = list(map(lambda x, y: x ^ y, input_block, mix_mix))
-
-                output = process_block(
-                    input_block, 
-                    self._key_chain[0],
-                    mode="ENCRYPT"
-                )
+                data   = int.from_bytes(
+                    self._plain_text[index:index+self._BLOCK_SIZE], 
+                    byteorder="big"
+                ) 
+                output = self._kernel.encrypt(mix_mix ^ data)
                 mix_mix = output
-                self._cipher_text += list_of_bin_to_bytes(output)
+                self._cipher_text += output.to_bytes(8, byteorder="big")
 
         elif self._WORK_MODE == WORK_MODE_TRIPLE_DES:
             assert len(self._key_chain) == 3, "triple DES requires 3 keys"
 
-            first_layer_des = CryptographyDES()
+            first_layer_des  = _DES()
             first_layer_des.set_key(self._key_chain[0])
 
-            second_layer_des = CryptographyDES()
+            second_layer_des = _DES()
             second_layer_des.set_key(self._key_chain[1])
 
-            third_layer_des  = CryptographyDES()
+            third_layer_des  = _DES()
             third_layer_des.set_key(self._key_chain[2])
 
-            first_layer_des.set_plain_text(self._plain_text)
-            first_layer_des.encrypt()
-            temp = first_layer_des.get_cipher_text_as_bytes()
-
-            second_layer_des.set_cipher_text(temp)
-            second_layer_des.decrypt()
-            temp = second_layer_des.get_plain_text_as_bytes()
-
-            third_layer_des.set_plain_text(temp)
-            third_layer_des.encrypt()
-            self._cipher_text = third_layer_des.get_cipher_text_as_bytes()
+            for index in range(0, len(self._plain_text), self._BLOCK_SIZE): 
+                data = int.from_bytes(
+                    self._plain_text[index:index+self._BLOCK_SIZE], 
+                    byteorder="big"
+                )
+                result = third_layer_des.encrypt(
+                    second_layer_des.decrypt(
+                        first_layer_des.encrypt(data)
+                    )
+                )
+                self._cipher_text += result.to_bytes(8, byteorder="big")
 
     def decrypt(self):
         self._plain_text = b''
 
         if self._WORK_MODE == WORK_MODE_ECB:
             for index in range(0, len(self._cipher_text), self._BLOCK_SIZE): 
-                output = process_block(
+                data = int.from_bytes(
                     self._cipher_text[index:index+self._BLOCK_SIZE], 
-                    self._key_chain[0],
-                    mode="DECRYPT"
+                    byteorder="big"
                 )
-                self._plain_text += list_of_bin_to_bytes(output)
+                output = self._kernel.decrypt(data)
+                self._plain_text += output.to_bytes(8, byteorder="big")
 
         elif self._WORK_MODE == WORK_MODE_CBC:
             assert "_initialization_vector" in self.__dict__
             mix_mix = self._initialization_vector
             for index in range(0, len(self._cipher_text), self._BLOCK_SIZE): 
-                input_block = bytes_to_list_of_bin(self._cipher_text[index:index+self._BLOCK_SIZE])
-
-                output= process_block(
-                    input_block, 
-                    self._key_chain[0],
-                    mode="DECRYPT"
+                data = int.from_bytes(
+                    self._cipher_text[index:index+self._BLOCK_SIZE], 
+                    byteorder="big"
                 )
-                output  = list(map(lambda x, y: x ^ y, output, mix_mix))
-                mix_mix = input_block
-                self._plain_text += list_of_bin_to_bytes(output)
+                output  = mix_mix ^ self._kernel.decrypt(data)
+                mix_mix = data
+                self._plain_text += output.to_bytes(8, byteorder="big")
 
         elif self._WORK_MODE == WORK_MODE_TRIPLE_DES:
             assert len(self._key_chain) == 3, "triple DES requires 3 keys ({} given)".format(len(self._key_chain))
 
-            first_layer_des = CryptographyDES()
+            first_layer_des = _DES()
             first_layer_des.set_key(self._key_chain[0])
 
-            second_layer_des = CryptographyDES()
+            second_layer_des = _DES()
             second_layer_des.set_key(self._key_chain[1])
 
-            third_layer_des  = CryptographyDES()
+            third_layer_des  = _DES()
             third_layer_des.set_key(self._key_chain[2])
 
-            third_layer_des.set_cipher_text(self._cipher_text)
-            third_layer_des.decrypt()
-            temp = third_layer_des.get_plain_text_as_bytes()
-
-            second_layer_des.set_plain_text(temp)
-            second_layer_des.encrypt()
-            temp = second_layer_des.get_cipher_text_as_bytes()
-
-            first_layer_des.set_cipher_text(temp)
-            first_layer_des.decrypt()
-            self._plain_text = first_layer_des.get_plain_text()
+            for index in range(0, len(self._cipher_text), self._BLOCK_SIZE): 
+                data = int.from_bytes(
+                    self._cipher_text[index:index+self._BLOCK_SIZE], 
+                    byteorder="big"
+                ) 
+                result = first_layer_des.decrypt(
+                    second_layer_des.encrypt(
+                        third_layer_des.decrypt(data)
+                    )
+                )
+                self._plain_text += result.to_bytes(8, byteorder="big")
 
         self._plain_text = unpad_bytes(self._plain_text, self._BLOCK_SIZE)
 
@@ -168,17 +165,17 @@ class CryptographyDES(CryptographyBase):
             return
         
         key = pad_bytes(key, self._BLOCK_SIZE)
-        self._key_chain.append(generate_subkeys(key))
+        key_int = int.from_bytes(key, byteorder='big')
+        self._kernel.set_key(key_int)
+        self._key_chain.append(key_int)
 
     def get_init_vector(self) -> [int]:
         if "_initialization_vector" not in self.__dict__:
             self._initialization_vector = get_initialization_vector(CryptographyDES.BLOCK_SIZE)
-        return to_hex(list_of_bin_to_bytes(self._initialization_vector))
+        return hex(self._initialization_vector)[2:]
 
-    def set_init_vector(self, init_vector:[int]):
-        raw_vector = bytes_to_list_of_bin(from_hex(init_vector))
-        assert len(raw_vector) == CryptographyDES.BLOCK_SIZE
-        self._initialization_vector = raw_vector
+    def set_init_vector(self, init_vector:str):
+        self._initialization_vector = int(init_vector, base=16)
 
     def get_key(self):
         return self._key_chain
@@ -229,9 +226,11 @@ if __name__ == "__main__":
     # ===== Encryption ======
     des_instance = CryptographyDES()
     des_instance.set_plain_text(message)
-    des_instance.set_key(key)
     des_instance.set_work_mode(WORK_MODE_CBC)
     vec = des_instance.get_init_vector()
+    des_instance.set_key(key)
+    # des_instance.set_key("hahahaha")
+    # des_instance.set_key("gagagaga")
     des_instance.encrypt()
     hex_output = des_instance.get_cipher_text()
     print("Hex Encrypted Text:", hex_output)
@@ -240,10 +239,41 @@ if __name__ == "__main__":
     # ===== Decryption ======
     des_instance_b = CryptographyDES()
     des_instance_b.set_key(key)
+    # des_instance_b.set_key("hahahaha")
+    # des_instance_b.set_key("gagagaga")
     des_instance_b.set_work_mode(WORK_MODE_CBC)
     des_instance_b.set_cipher_text(hex_output)
     des_instance_b.set_init_vector(vec)
     des_instance_b.decrypt()
     print(des_instance_b)
     print("Decrypted Message:", des_instance_b.get_plain_text())
+
+    # ===== Encryption of a picture ======
+    with open("/Users/jeromemao/Desktop/cryptography/cryptography/DES/shirai_kuroko.jpg", 'rb') as picture:
+        des_instance_c = CryptographyDES()
+        des_instance_c.set_key(key)
+        des_instance_c.set_work_mode(WORK_MODE_ECB)
+        # vec = des_instance_c.get_init_vector()
+        des_instance_c.set_plain_text(picture.read())
+        des_instance_c.encrypt()
+        encrypted_image = des_instance_c.get_cipher_text_as_bytes()
+
+        start = time.time()
+
+        with open("encrypted.jpg", 'wb') as encrypted_pic:
+            encrypted_pic.write(encrypted_image)
+
+        des_instance_d = CryptographyDES()
+        des_instance_d.set_key(key)
+        des_instance_d.set_work_mode(WORK_MODE_ECB)
+        des_instance_d.set_cipher_text(encrypted_image)
+        des_instance_d.decrypt()
+
+        with open("reset.jpg", "wb") as decrypted_pic:
+            decrypted_pic.write(des_instance_d.get_plain_text_as_bytes())
+
+        end = time.time()
+        print("time for encrypt/decrypt image:", end-start)
+        
+
 

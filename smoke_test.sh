@@ -1,3 +1,5 @@
+python3 cryptography/DES/cpp/setup.py install
+
 function DES(){
     # python3 -m cryptography.DES.cryptography_des
     return 0

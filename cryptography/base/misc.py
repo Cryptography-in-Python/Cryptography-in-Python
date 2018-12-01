@@ -82,12 +82,12 @@ def pad_to_fit_block(byte_string:bytes, block_size:int) -> bytes:
     nearest_size = int(((len(byte_string) // block_size) + 1) * block_size)
     return pad_bytes(byte_string, nearest_size)
 
-def pad_int(number:int, bits:int) -> int:
-    if number.bit_length() < bits:
-        return number << (bits - number.bit_length()) 
-    elif number.bit_length() == bits:
-        return number
-    else:
-        raise ValueError("number of bits is longer than the size of number")
+# def pad_int(number:int, bits:int) -> int:
+#     if number.bit_length() < bits:
+#         return number << (bits - number.bit_length()) 
+#     elif number.bit_length() == bits:
+#         return number
+#     else:
+#         raise ValueError("number of bits is longer than the size of number")
 
 
