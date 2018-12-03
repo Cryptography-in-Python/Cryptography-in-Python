@@ -4,6 +4,7 @@ from ..sha1 import sha1
 from ..MD5 import cryptography_md5
 from ..RSA import cryptography_rsa
 from ..AES import aes
+from ..VIG import cryptography_vigenere
 from PyQt5.QtWidgets import (QWidget, QLabel, QPushButton,
                              QComboBox, QApplication, QPlainTextEdit, QFileDialog)
 
@@ -25,9 +26,15 @@ class Example(QWidget):
         'cypherText': None,
         'key': None,
         'iv':None,
-        'encode_mode': 'CBC',
+        'encode_mode': 'OFB',
         'mode': None,
         'length': None,
+        'plainText': ''
+    }
+
+    __cypher_vig = {
+        'cypherText': None,
+        'key': None,
         'plainText': ''
     }
 
@@ -47,6 +54,7 @@ class Example(QWidget):
         combo = QComboBox(self)
         combo.addItem("AES")
         combo.addItem("DES")
+        combo.addItem("VIG")
         combo.addItem("RSA")
         combo.addItem("MD5")
         combo.addItem("SHA1")
@@ -137,6 +145,13 @@ class Example(QWidget):
         elif self.__algorithm == "DES":
             # instance = cryptography_des.CryptographyDES()
             pass
+        elif self.__algorithm == "VIG":
+            instance = cryptography_vigenere.CryptographyVigenere()
+            self.__cypher_vig['plainText'] = self.textBox.toPlainText()
+            self.__cypher_vig['key'] = self.textBox2.toPlainText()
+            self.__cypher_vig['cypherText'] = instance.encrypt(self.__cypher_vig['plainText'] , self.__cypher_vig['key'])
+            self.textBox3.setPlainText(self.__cypher_vig['cypherText'])
+
         elif self.__algorithm == "RSA":
             instance = cryptography_rsa.CryptographyRSA()
             # instance.set_plain_text(self.textBox.toPlainText())
@@ -161,6 +176,9 @@ class Example(QWidget):
         elif self.__algorithm == "DES":
             # instance = cryptography_des.CryptographyDES()
             pass
+        elif self.__algorithm == "VIG":
+            instance = cryptography_vigenere.CryptographyVigenere()
+            self.textBox4.setPlainText(instance.decrypt(self.__cypher_vig['cypherText'] , self.__cypher_vig['key']))
         elif self.__algorithm == "RSA":
             instance = cryptography_rsa.CryptographyRSA()
             # instance.set_plain_text(self.textBox.toPlainText())
