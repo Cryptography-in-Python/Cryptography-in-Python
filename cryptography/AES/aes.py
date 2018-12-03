@@ -1,16 +1,3 @@
-#!/usr/bin/python
-#
-# aes.py: implements AES - Advanced Encryption Standard
-# from the SlowAES project, http://code.google.com/p/slowaes/
-#
-# Copyright (c) 2008    Josh Davis ( http://www.josh-davis.org ),
-#           Alex Martelli ( http://www.aleax.it )
-#
-# Ported from C code written by Laurent Haan ( http://www.progressive-coding.com )
-#
-# Licensed under the Apache License, Version 2.0
-# http://www.apache.org/licenses/
-#
 import os
 import sys
 import math
@@ -18,9 +5,6 @@ import math
 class AES(object):
     '''AES funtions for a single block
     '''
-    # Very annoying code:  all is for an object, but no state is kept!
-    # Should just be plain functions in a AES modlule.
-    
     # valid key sizes
     keySize = dict(SIZE_128=16, SIZE_192=24, SIZE_256=32)
 
@@ -396,7 +380,7 @@ class AES(object):
 
 class AESModeOfOperation(object):
     '''Handles AES with plaintext consistingof multiple blocks.
-    Choice of block encoding modes:  OFT, CFB, CBC
+    Choice of block encoding modes:  OFB, CFB, CBC
     '''
     # Very annoying code:  all is for an object, but no state is kept!
     # Should just be plain functions in an AES_BlockMode module.
@@ -405,6 +389,24 @@ class AESModeOfOperation(object):
     # structure of supported modes of operation
     modeOfOperation = dict(OFB=0, CFB=1, CBC=2)
 
+    def set_key(self, key: 'a key, can be str, or int array') -> list:
+        '''
+        set the keys from users
+        '''
+        print(f'plain text key is {key}')
+        int_key=[]
+        for x in key:
+            int_key.append(ord(x))
+        # print('key length: ',self._user_supplied_key.length())
+        if len(int_key) < 16:
+            raise ValueError("Key size must be at least 128 bits!")
+        elif len(int_key) > 16:
+            int_key = int_key[0:16]
+            print("Key is too long, use first 128 bits")
+        # print('int key is' ," ".join(str(x) for x in int_key))
+        return int_key
+        
+    
     # converts a 16 character string into a number array
     def convertString(self, string, start, end, mode):
         if end - start > 16: end = start + 16
@@ -646,34 +648,33 @@ def generateRandomKey(keysize):
     """
     if keysize not in (16, 24, 32):
         emsg = 'Invalid keysize, %s. Should be one of (16, 24, 32).'
-        raise ValueError, emsg % keysize
+        raise ValueError(emsg % keysize)
     return os.urandom(keysize)
 
 def testStr(cleartext, keysize=16, modeName = "CBC"):
     '''Test with random key, choice of mode.'''
-    print 'Random key test', 'Mode:', modeName
-    print 'cleartext:', cleartext
+    print('Random key test', 'Mode:', modeName)
+    print('cleartext:', cleartext)
     key =  generateRandomKey(keysize)
-    print 'Key:', [ord(x) for x in key]
+    print('Key:', [ord(x) for x in key])
     mode = AESModeOfOperation.modeOfOperation[modeName]
     cipher = encryptData(key, cleartext, mode)
-    print 'Cipher:', [ord(x) for x in cipher]
+    print('Cipher:', [ord(x) for x in cipher])
     decr = decryptData(key, cipher, mode)
-    print 'Decrypted:', decr
+    print('Decrypted:', decr)
     
     
 if __name__ == "__main__":
     moo = AESModeOfOperation()
-    cleartext = "This is a test with several blocks!"
+    cleartext = "hjdfhdoij jf jiojf ioj"
     cypherkey = [143,194,34,208,145,203,230,143,177,246,97,206,145,92,255,84]
     iv = [103,35,148,239,76,213,47,118,255,222,123,176,106,134,98,92]
     mode, orig_len, ciph = moo.encrypt(cleartext, moo.modeOfOperation["CBC"],
             cypherkey, moo.aes.keySize["SIZE_128"], iv)
-    print 'm=%s, ol=%s (%s), ciph=%s' % (mode, orig_len, len(cleartext), ciph)
+    print('m=%s, ol=%s (%s), ciph=%s' % (mode, orig_len, len(cleartext), ciph))
     decr = moo.decrypt(ciph, orig_len, mode, cypherkey,
             moo.aes.keySize["SIZE_128"], iv)
-    print decr
-    testStr(cleartext, 16, "CBC")
+    print(decr)
     
 
 

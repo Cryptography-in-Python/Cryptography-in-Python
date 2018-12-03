@@ -80,7 +80,7 @@ class CryptographyAES128(CryptographyBase):
         if "_cipher_text" not in self.__dict__:
             raise ValueError("No cipher text has been set/computed")
         else:
-            return self._cipher_text
+            return self._cipher_text.tobytes().decode()
 
     def set_key(self, key: 'a key, can be str, bytes or bitarray') -> None:
         '''
