@@ -141,7 +141,7 @@ class Example(QWidget):
                                                                  self.__cypher_aes['key'], instance.aes.keySize["SIZE_128"], self.__cypher_aes['iv'])
             print('m=%s, ol=%s (%s), ciph=%s' %
                   (self.__cypher_aes['mode'], self.__cypher_aes['length'], len(self.__cypher_aes['plainText']), self.__cypher_AES))
-            self.textBox3.setPlainText(" ".join(str(x) for x in self.__cypher_AES))
+            self.textBox3.setPlainText(" ".join(chr(x) for x in self.__cypher_AES))
         elif self.__algorithm == "DES":
             # instance = cryptography_des.CryptographyDES()
             pass

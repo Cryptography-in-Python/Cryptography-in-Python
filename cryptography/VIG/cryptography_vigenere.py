@@ -10,11 +10,11 @@ class CryptographyVigenere():
 
 		for i in range (0,quotient):
 			for j in range (0,keyLen):
-				c=int((ord(input[i*keyLen+j])-ord('a')+ord(key[j])-ord('a'))%26+ord('a'))
+				c=(ord(input[i*keyLen+j])-ord('a')+ord(key[j])-ord('a'))%26+ord('a')
 				out+=chr(c)
 
 		for i in range (0,remainder):
-			c=int((ord(input[quotient*keyLen+i])-ord('a')+ord(key[i])-ord('a'))%26+ord('a'))
+			c=(ord(input[quotient*keyLen+i])-ord('a')+ord(key[i])-ord('a'))%26+ord('a')
 			out+=chr(c)
 
 		return out
@@ -29,11 +29,17 @@ class CryptographyVigenere():
 		input = ""
 		for i in range (0 , quotient):
 			for j in range (0 , keyLen) :
-				c = int((ord(output[i*keyLen+j]) - ord('a') - (ord(key[j]) - ord('a')) % 26 + ord('a')))
+				c = ord(output[i*keyLen+j]) - ord('a') - (ord(key[j]) - ord('a'))
+				if c < 0:
+					c += 26
+				c += ord('a')
 				input+=chr(c)
 
 		for i in range (0 , remainder) :
-			c = int((ord(output[quotient*keyLen + i]) - ord('a') - (ord(key[i]) - ord('a')) % 26 + ord('a')))
+			c = ord(output[quotient*keyLen + i]) - ord('a') - (ord(key[i]) - ord('a'))
+			if c < 0:
+				c+=26
+			c += ord('a')
 			input+=chr(c)  
 
 		return input
@@ -47,9 +53,9 @@ if __name__ == "__main__":
 	print(plainTextToCipherText)
 
 
-	cipherText = input ("Please input the cipherText : ")
-	key = input ("Please input the key : ")
-	cipherTextToPlainText = vigenere_instance.decrypt(cipherText , key)
+	# cipherText = input ("Please input the cipherText : ")
+	# key = input ("Please input the key : ")
+	cipherTextToPlainText = vigenere_instance.decrypt(plainTextToCipherText , key)
 	print(cipherTextToPlainText)
 
 
