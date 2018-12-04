@@ -103,7 +103,7 @@ class MyTableWidget(QWidget):
         self.layoutAES.addLayout(self.layoutAESText)
         
         self.tabAES.setLayout(self.layoutAES)
-        self.textAESKey.setFixedHeight(self.labelAESKey.font().pointSize()*4) 
+        self.textAESKey.setFixedHeight(40) 
         
         # Create DES tab
         
@@ -115,6 +115,11 @@ class MyTableWidget(QWidget):
         self.textDESPlain     = QPlainTextEdit(self)
         self.textDESCypher    = QPlainTextEdit(self)
         self.textDESKey       = QPlainTextEdit(self)
+        self.comboDESMode     = QComboBox(self)
+        
+        self.comboDESMode.addItem("EBC")
+        self.comboDESMode.addItem("CBC")
+        self.comboDESMode.addItem("3 DES")
         
         self.layoutDESButton = QVBoxLayout()
         self.layoutDESButton.addStretch()
@@ -139,6 +144,7 @@ class MyTableWidget(QWidget):
         self.layoutDESKey = QHBoxLayout()
         self.layoutDESKey.addWidget(self.labelDESKey)
         self.layoutDESKey.addWidget(self.textDESKey)
+        self.layoutDESKey.addWidget(self.comboDESMode)
         
         self.layoutDES = QVBoxLayout()
         self.layoutDES.addLayout(self.layoutDESKey)
@@ -149,20 +155,15 @@ class MyTableWidget(QWidget):
         
         # Create MD5 tab
         
-        self.labelMD5Key      = QLabel("Key:",self)
         self.labelMD5Plain    = QLabel("Plain Text:",self)
-        self.labelMD5Cypher   = QLabel("Cipher Text:",self)
-        self.buttonMD5Encrypt = QPushButton("Encrypt",self)
-        self.buttonMD5Decrypt = QPushButton("Decrypt",self)
+        self.labelMD5Digest   = QLabel("Digest Text:",self)
+        self.buttonMD5Hash    = QPushButton("Digest",self)
         self.textMD5Plain     = QPlainTextEdit(self)
-        self.textMD5Cypher    = QPlainTextEdit(self)
-        self.textMD5Key       = QPlainTextEdit(self)
+        self.textMD5Digest    = QPlainTextEdit(self)
         
         self.layoutMD5Button = QVBoxLayout()
         self.layoutMD5Button.addStretch()
-        self.layoutMD5Button.addWidget(self.buttonMD5Encrypt)
-        self.layoutMD5Button.addStretch()
-        self.layoutMD5Button.addWidget(self.buttonMD5Decrypt)
+        self.layoutMD5Button.addWidget(self.buttonMD5Hash)
         self.layoutMD5Button.addStretch()
         
         self.layoutMD5Left = QVBoxLayout()
@@ -170,35 +171,33 @@ class MyTableWidget(QWidget):
         self.layoutMD5Left.addWidget(self.textMD5Plain)
         
         self.layoutMD5Right = QVBoxLayout()
-        self.layoutMD5Right.addWidget(self.labelMD5Cypher)
-        self.layoutMD5Right.addWidget(self.textMD5Cypher)
+        self.layoutMD5Right.addWidget(self.labelMD5Digest)
+        self.layoutMD5Right.addWidget(self.textMD5Digest)
         
         self.layoutMD5Text = QHBoxLayout()
         self.layoutMD5Text.addLayout(self.layoutMD5Left)
         self.layoutMD5Text.addLayout(self.layoutMD5Button)
         self.layoutMD5Text.addLayout(self.layoutMD5Right)
         
-        self.layoutMD5Key = QHBoxLayout()
-        self.layoutMD5Key.addWidget(self.labelMD5Key)
-        self.layoutMD5Key.addWidget(self.textMD5Key)
-        
         self.layoutMD5 = QVBoxLayout()
-        self.layoutMD5.addLayout(self.layoutMD5Key)
         self.layoutMD5.addLayout(self.layoutMD5Text)
         
         self.tabMD5.setLayout(self.layoutMD5)
-        self.textMD5Key.setFixedHeight(40) 
         
         # Create RSA tab
         
-        self.labelRSAKey      = QLabel("Key:",self)
-        self.labelRSAPlain    = QLabel("Plain Text:",self)
-        self.labelRSACypher   = QLabel("Cipher Text:",self)
-        self.buttonRSAEncrypt = QPushButton("Encrypt",self)
-        self.buttonRSADecrypt = QPushButton("Decrypt",self)
-        self.textRSAPlain     = QPlainTextEdit(self)
-        self.textRSACypher    = QPlainTextEdit(self)
-        self.textRSAKey       = QPlainTextEdit(self)
+        self.labelRSAKeyLength    = QLabel("Key length:",self)
+        self.labelRSAPrivateKey   = QLabel("Private Key:",self)
+        self.labelRSAEulerTotient = QLabel("Euler Totient:",self)
+        self.labelRSAPlain        = QLabel("Plain Text:",self)
+        self.labelRSACypher       = QLabel("Cipher Text:",self)
+        self.buttonRSAEncrypt     = QPushButton("Encrypt",self)
+        self.buttonRSADecrypt     = QPushButton("Decrypt",self)
+        self.textRSAPlain         = QPlainTextEdit(self)
+        self.textRSACypher        = QPlainTextEdit(self)
+        self.textRSAKeyLength     = QPlainTextEdit(self)
+        self.textRSAPrivateKey = QPlainTextEdit(self)
+        self.textRSAEulerTotient=QPlainTextEdit(self)
         
         self.layoutRSAButton = QVBoxLayout()
         self.layoutRSAButton.addStretch()
@@ -220,16 +219,33 @@ class MyTableWidget(QWidget):
         self.layoutRSAText.addLayout(self.layoutRSAButton)
         self.layoutRSAText.addLayout(self.layoutRSARight)
         
-        self.layoutRSAKey = QHBoxLayout()
-        self.layoutRSAKey.addWidget(self.labelRSAKey)
-        self.layoutRSAKey.addWidget(self.textRSAKey)
+        self.layoutRSAKeyLength = QHBoxLayout()
+        self.layoutRSAKeyLength.addWidget(self.labelRSAKeyLength)
+        self.layoutRSAKeyLength.addWidget(self.textRSAKeyLength)
+        
+        self.layoutRSAPrivateKey = QHBoxLayout()
+        self.layoutRSAPrivateKey.addWidget(self.labelRSAPrivateKey)
+        self.layoutRSAPrivateKey.addWidget(self.textRSAPrivateKey)
+        
+        self.layoutRSAEulerTotient = QHBoxLayout()
+        self.layoutRSAEulerTotient.addWidget(self.labelRSAEulerTotient)
+        self.layoutRSAEulerTotient.addWidget(self.textRSAEulerTotient)
+        
+        self.layoutRSAKey = QVBoxLayout()
+        self.layoutRSAKey.addLayout(self.layoutRSAKeyLength)
+        self.layoutRSAKey.addLayout(self.layoutRSAPrivateKey)
+        self.layoutRSAKey.addLayout(self.layoutRSAEulerTotient)
+        
         
         self.layoutRSA = QVBoxLayout()
         self.layoutRSA.addLayout(self.layoutRSAKey)
         self.layoutRSA.addLayout(self.layoutRSAText)
         
         self.tabRSA.setLayout(self.layoutRSA)
-        self.textRSAKey.setFixedHeight(40) 
+        
+        self.textRSAKeyLength.setFixedHeight(40)
+        self.textRSAPrivateKey.setFixedHeight(40)
+        self.textRSAEulerTotient.setFixedHeight(40)
         
         # Create SHA tab
         
