@@ -1,62 +1,49 @@
+
 class CryptographyVigenere():
-	def encrypt(self,input,key):
-		ptLen = len(input)
-		keyLen = len(key)
 
-		quotient = ptLen // keyLen
-		remainder = ptLen % keyLen
+	def __init__(self):
+		self._start_from = 32
+		self._end_to     = 127
 
-		out = ""
+		self._table = []
+		for i in range(self._end_to - self._start_from):
+			first_half  = list(range(self._start_from + i, self._end_to))
+			second_half = list(range(self._start_from, self._start_from + i))
+			self._table.append(first_half + second_half)
 
-		for i in range (0,quotient):
-			for j in range (0,keyLen):
-				c=(ord(input[i*keyLen+j])-ord('a')+ord(key[j])-ord('a'))%26+ord('a')
-				out+=chr(c)
+	def get_cipher_alpha(self, plain_letter:int, key_letter:int) -> int:
+		return self._table[key_letter - self._start_from][plain_letter - self._start_from]
 
-		for i in range (0,remainder):
-			c=(ord(input[quotient*keyLen+i])-ord('a')+ord(key[i])-ord('a'))%26+ord('a')
-			out+=chr(c)
+	def get_plain_alpha(self, cipher_letter:int, key_letter:int) -> int:
+		return self._table[key_letter - self._start_from].index(cipher_letter) + self._start_from
 
-		return out
+	def encrypt(self, plain_text, key):
+		result = []
+		while len(key) < len(plain_text):
+			key += key
+		key = key[:len(plain_text)]
 
-	def decrypt(self,output,key):
-		ptLen = len (output) 
-		keyLen = len (key)
-		
-		quotient = ptLen // keyLen
-		remainder = ptLen % keyLen
+		for plain, k in zip(plain_text, key):
+			result.append(chr(self.get_cipher_alpha(ord(plain), ord(k))))
+		return "".join(result)
 
-		input = ""
-		for i in range (0 , quotient):
-			for j in range (0 , keyLen) :
-				c = ord(output[i*keyLen+j]) - ord('a') - (ord(key[j]) - ord('a'))
-				if c < 0:
-					c += 26
-				c += ord('a')
-				input+=chr(c)
+	def decrypt(self, cipher_text, key):
+		result = []
+		while len(key) < len(cipher_text):
+			key += key
+		key = key[:len(cipher_text)]
 
-		for i in range (0 , remainder) :
-			c = ord(output[quotient*keyLen + i]) - ord('a') - (ord(key[i]) - ord('a'))
-			if c < 0:
-				c+=26
-			c += ord('a')
-			input+=chr(c)  
+		for cipher, k in zip(cipher_text, key):
+			result.append(chr(self.get_plain_alpha(ord(cipher), ord(k))))
+		return "".join(result)
 
-		return input
 
 if __name__ == "__main__":
 	vigenere_instance = CryptographyVigenere()
-
-	plainText = input ("Please input the plainText : ")
-	key = input ("Please input the key : ")
-	plainTextToCipherText = vigenere_instance.encrypt(plainText , key)
-	print(plainTextToCipherText)
-
-
-	# cipherText = input ("Please input the cipherText : ")
-	# key = input ("Please input the key : ")
-	cipherTextToPlainText = vigenere_instance.decrypt(plainTextToCipherText , key)
-	print(cipherTextToPlainText)
+	cipher = vigenere_instance.encrypt("Hello World! qh3thqh", "blaha")
+	plain  = vigenere_instance.decrypt(cipher, "blaha")
+	print("cipher is", cipher)
+	print("plain is", plain)
 
 
 	

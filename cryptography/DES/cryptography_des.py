@@ -226,11 +226,11 @@ if __name__ == "__main__":
     # ===== Encryption ======
     des_instance = CryptographyDES()
     des_instance.set_plain_text(message)
-    des_instance.set_work_mode(WORK_MODE_CBC)
+    des_instance.set_work_mode(WORK_MODE_TRIPLE_DES)
     vec = des_instance.get_init_vector()
     des_instance.set_key(key)
-    # des_instance.set_key("hahahaha")
-    # des_instance.set_key("gagagaga")
+    des_instance.set_key("itomarik")
+    des_instance.set_key("inoue")
     des_instance.encrypt()
     hex_output = des_instance.get_cipher_text()
     print("Hex Encrypted Text:", hex_output)
@@ -239,9 +239,9 @@ if __name__ == "__main__":
     # ===== Decryption ======
     des_instance_b = CryptographyDES()
     des_instance_b.set_key(key)
-    # des_instance_b.set_key("hahahaha")
-    # des_instance_b.set_key("gagagaga")
-    des_instance_b.set_work_mode(WORK_MODE_CBC)
+    des_instance_b.set_key("itomarik")
+    des_instance_b.set_key("inoue")
+    des_instance_b.set_work_mode(WORK_MODE_TRIPLE_DES)
     des_instance_b.set_cipher_text(hex_output)
     des_instance_b.set_init_vector(vec)
     des_instance_b.decrypt()
@@ -249,31 +249,31 @@ if __name__ == "__main__":
     print("Decrypted Message:", des_instance_b.get_plain_text())
 
     # ===== Encryption of a picture ======
-    with open("/Users/jeromemao/Desktop/cryptography/cryptography/DES/shirai_kuroko.jpg", 'rb') as picture:
-        des_instance_c = CryptographyDES()
-        des_instance_c.set_key(key)
-        des_instance_c.set_work_mode(WORK_MODE_ECB)
-        # vec = des_instance_c.get_init_vector()
-        des_instance_c.set_plain_text(picture.read())
-        des_instance_c.encrypt()
-        encrypted_image = des_instance_c.get_cipher_text_as_bytes()
+    # with open("/Users/jeromemao/Desktop/cryptography/cryptography/DES/shirai_kuroko.jpg", 'rb') as picture:
+    #     des_instance_c = CryptographyDES()
+    #     des_instance_c.set_key(key)
+    #     des_instance_c.set_work_mode(WORK_MODE_ECB)
+    #     # vec = des_instance_c.get_init_vector()
+    #     des_instance_c.set_plain_text(picture.read())
+    #     des_instance_c.encrypt()
+    #     encrypted_image = des_instance_c.get_cipher_text_as_bytes()
 
-        start = time.time()
+    #     start = time.time()
 
-        with open("encrypted.jpg", 'wb') as encrypted_pic:
-            encrypted_pic.write(encrypted_image)
+    #     with open("encrypted.jpg", 'wb') as encrypted_pic:
+    #         encrypted_pic.write(encrypted_image)
 
-        des_instance_d = CryptographyDES()
-        des_instance_d.set_key(key)
-        des_instance_d.set_work_mode(WORK_MODE_ECB)
-        des_instance_d.set_cipher_text(encrypted_image)
-        des_instance_d.decrypt()
+    #     des_instance_d = CryptographyDES()
+    #     des_instance_d.set_key(key)
+    #     des_instance_d.set_work_mode(WORK_MODE_ECB)
+    #     des_instance_d.set_cipher_text(encrypted_image)
+    #     des_instance_d.decrypt()
 
-        with open("reset.jpg", "wb") as decrypted_pic:
-            decrypted_pic.write(des_instance_d.get_plain_text_as_bytes())
+    #     with open("reset.jpg", "wb") as decrypted_pic:
+    #         decrypted_pic.write(des_instance_d.get_plain_text_as_bytes())
 
-        end = time.time()
-        print("time for encrypt/decrypt image:", end-start)
+    #     end = time.time()
+    #     print("time for encrypt/decrypt image:", end-start)
         
 
 
