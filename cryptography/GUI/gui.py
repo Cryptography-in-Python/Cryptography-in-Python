@@ -105,6 +105,9 @@ class MyTableWidget(QWidget):
         self.tabAES.setLayout(self.layoutAES)
         self.textAESKey.setFixedHeight(40) 
         
+        self.buttonAESEncrypt.clicked.connect(self._AESEncrypt)
+        self.buttonAESDecrypt.clicked.connect(self._AESDecrypt)
+        
         # Create DES tab
         
         self.labelDESKey      = QLabel("Key:",self)
@@ -119,7 +122,7 @@ class MyTableWidget(QWidget):
         
         self.comboDESMode.addItem("EBC")
         self.comboDESMode.addItem("CBC")
-        self.comboDESMode.addItem("3 DES")
+        self.comboDESMode.addItem("3-DES")
         
         self.layoutDESButton = QVBoxLayout()
         self.layoutDESButton.addStretch()
@@ -157,7 +160,7 @@ class MyTableWidget(QWidget):
         
         self.labelMD5Plain    = QLabel("Plain Text:",self)
         self.labelMD5Digest   = QLabel("Digest Text:",self)
-        self.buttonMD5Hash    = QPushButton("Digest",self)
+        self.buttonMD5Hash    = QPushButton("Hash",self)
         self.textMD5Plain     = QPlainTextEdit(self)
         self.textMD5Digest    = QPlainTextEdit(self)
         
@@ -183,6 +186,8 @@ class MyTableWidget(QWidget):
         self.layoutMD5.addLayout(self.layoutMD5Text)
         
         self.tabMD5.setLayout(self.layoutMD5)
+        
+        self.buttonMD5Hash.clicked.connect(self._MD5Hash)
         
         # Create RSA tab
         
@@ -249,20 +254,16 @@ class MyTableWidget(QWidget):
         
         # Create SHA tab
         
-        self.labelSHAKey      = QLabel("Key:",self)
         self.labelSHAPlain    = QLabel("Plain Text:",self)
-        self.labelSHACypher   = QLabel("Cipher Text:",self)
-        self.buttonSHAEncrypt = QPushButton("Encrypt",self)
-        self.buttonSHADecrypt = QPushButton("Decrypt",self)
+        self.labelSHADigest   = QLabel("Digest Text:",self)
+        self.buttonSHAHash    = QPushButton("Hash",self)
         self.textSHAPlain     = QPlainTextEdit(self)
-        self.textSHACypher    = QPlainTextEdit(self)
-        self.textSHAKey       = QPlainTextEdit(self)
+        self.textSHADigest    = QPlainTextEdit(self)
+
         
         self.layoutSHAButton = QVBoxLayout()
         self.layoutSHAButton.addStretch()
-        self.layoutSHAButton.addWidget(self.buttonSHAEncrypt)
-        self.layoutSHAButton.addStretch()
-        self.layoutSHAButton.addWidget(self.buttonSHADecrypt)
+        self.layoutSHAButton.addWidget(self.buttonSHAHash)
         self.layoutSHAButton.addStretch()
         
         self.layoutSHALeft = QVBoxLayout()
@@ -270,24 +271,20 @@ class MyTableWidget(QWidget):
         self.layoutSHALeft.addWidget(self.textSHAPlain)
         
         self.layoutSHARight = QVBoxLayout()
-        self.layoutSHARight.addWidget(self.labelSHACypher)
-        self.layoutSHARight.addWidget(self.textSHACypher)
+        self.layoutSHARight.addWidget(self.labelSHADigest)
+        self.layoutSHARight.addWidget(self.textSHADigest)
         
         self.layoutSHAText = QHBoxLayout()
         self.layoutSHAText.addLayout(self.layoutSHALeft)
         self.layoutSHAText.addLayout(self.layoutSHAButton)
         self.layoutSHAText.addLayout(self.layoutSHARight)
         
-        self.layoutSHAKey = QHBoxLayout()
-        self.layoutSHAKey.addWidget(self.labelSHAKey)
-        self.layoutSHAKey.addWidget(self.textSHAKey)
-        
         self.layoutSHA = QVBoxLayout()
-        self.layoutSHA.addLayout(self.layoutSHAKey)
         self.layoutSHA.addLayout(self.layoutSHAText)
         
         self.tabSHA.setLayout(self.layoutSHA)
-        self.textSHAKey.setFixedHeight(40) 
+        
+        self.buttonSHAHash.clicked.connect(self._SHAHash)
         
         # Create VIG tab
         
@@ -330,15 +327,58 @@ class MyTableWidget(QWidget):
         
         self.tabVIG.setLayout(self.layoutVIG)
         self.textVIGKey.setFixedHeight(40) 
+        
+        self.buttonVIGEncrypt.clicked.connect(self._VIGEncrypt)
+        self.buttonVIGDecrypt.clicked.connect(self._VIGDecrypt)
+        
         # Add tabs to widget        
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
- 
-    @pyqtSlot()
-    def on_click(self):
-        print("\n")
-        for currentQTableWidgetItem in self.tableWidget.selectedItems():
-            print(currentQTableWidgetItem.row(), currentQTableWidgetItem.column(), currentQTableWidgetItem.text())
+        
+    # Create functions for AES
+    def _AESEncrypt(self):
+        mode = self.comboAESMode.currentIndex()
+        key = self.textAESKey.toPlainText()
+        
+        if mode == 0: # OFB
+            pass
+        elif mode == 1: # CFB
+            pass
+        elif mode == 2: # CBC
+            pass
+    def _AESDecrypt(self):
+        print("exit")
+        pass 
+        
+    
+    # Create function for MD5 
+    def _MD5Hash(self):
+        plainText = self.textMD5Plain.toPlainText()
+        instance = cryptography_md5.CryptographyMD5()
+        digest = instance.encrypt(plainText)
+        self.textMD5Digest.setPlainText(digest)
+        
+    # Create function for SHA-1
+    def _SHAHash(self):
+        plainText = self.textSHAPlain.toPlainText()
+        digest = sha1.shaone(plainText)
+        self.textSHADigest.setPlainText(digest[2:])
+        
+    # Create function for VIG
+    def _VIGEncrypt(self):
+        plainText = self.textVIGPlain.toPlainText()
+        key = self.textVIGKey.toPlainText()
+        instance = cryptography_vigenere.CryptographyVigenere()
+        cypherText = instance.encrypt(plainText,key)
+        self.textVIGCypher.setPlainText(cypherText)
+        
+    def _VIGDecrypt(self):       
+        cypherText = self.textVIGCypher.toPlainText()
+        key = self.textVIGKey.toPlainText()
+        instance = cryptography_vigenere.CryptographyVigenere()
+        plainText = instance.decrypt(cypherText,key)
+        self.textVIGPlain.setPlainText(plainText)
+        
  
 if __name__ == '__main__':
     app = QApplication(sys.argv)
