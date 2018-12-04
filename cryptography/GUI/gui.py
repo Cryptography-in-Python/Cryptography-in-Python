@@ -69,6 +69,7 @@ class MyTableWidget(QWidget):
         self.textAESCypher    = QPlainTextEdit(self)
         self.textAESKey       = QPlainTextEdit(self)
         
+        
         self.layoutAESButton = QVBoxLayout()
         self.layoutAESButton.addStretch()
         self.layoutAESButton.addWidget(self.buttonAESEncrypt)
@@ -76,10 +77,19 @@ class MyTableWidget(QWidget):
         self.layoutAESButton.addWidget(self.buttonAESDecrypt)
         self.layoutAESButton.addStretch()
         
+        self.layoutAESLeft = QVBoxLayout()
+        self.layoutAESLeft.addWidget(self.labelAESPlain)
+        self.layoutAESLeft.addWidget(self.textAESPlain)
+        
+        self.layoutAESRight = QVBoxLayout()
+        self.layoutAESRight.addWidget(self.labelAESCypher)
+        self.layoutAESRight.addWidget(self.textAESCypher)
+        
         self.layoutAESText = QHBoxLayout()
-        self.layoutAESText.addWidget(self.textAESPlain)
+        self.layoutAESText.addLayout(self.layoutAESLeft)
         self.layoutAESText.addLayout(self.layoutAESButton)
-        self.layoutAESText.addWidget(self.textAESCypher)
+        self.layoutAESText.addLayout(self.layoutAESRight)
+        
         
         self.layoutAESKey = QHBoxLayout()
         self.layoutAESKey.addWidget(self.labelAESKey)
@@ -91,7 +101,7 @@ class MyTableWidget(QWidget):
         
         
         self.tabAES.setLayout(self.layoutAES)
- 
+        self.textAESKey.setFixedHeight(40) 
         # Add tabs to widget        
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
