@@ -359,16 +359,54 @@ class MyTableWidget(QWidget):
     def _AESEncrypt(self):
         mode = self.comboAESMode.currentIndex()
         key = self.textAESKey.toPlainText()
+        print(key)
+        cypherKey = []
+        for i in key:
+            cypherKey.append(ord(i))
+        print(cypherKey)
+        
+        plainText = self.textAESPlain.toPlainText()
+        
+        instance = aes.AESModeOfOperation()
+        instance.set_key(key)
+        initialVector = [103, 35, 148, 239, 76, 213, 47, 118,255, 222, 123, 176, 106, 134, 98, 92]
         
         if mode == 0: # OFB
-            pass
+            encodeMode = "OFB"
         elif mode == 1: # CFB
-            pass
+            encodeMode = "CFB"
         elif mode == 2: # CBC
-            pass
+            encodeMode = "CBC"
+        #print(type(plainText),type(instance.modeOfOperation[encodeMode]),type(cypherKey),type(instance.aes.keySize["SIZE_128"]),type(initialVector))
+        modeAES,lengthAES,cypherText = instance.encrypt(plainText,instance.modeOfOperation[encodeMode],cypherKey,instance.aes.keySize["SIZE_128"],initialVector)
+        
+        self.textAESCypher.setPlainText("".join(chr(x) for x in cypherText))
+        
     def _AESDecrypt(self):
-        print("exit")
-        pass 
+        mode = self.comboAESMode.currentIndex()
+        key = self.textAESKey.toPlainText()
+        cypherKey = []
+        for i in key:
+            cypherKey.append(ord(i))
+        cypherText = self.textAESCypher.toPlainText()
+        cypherText2 = []
+        for i in cypherText:
+            cypherText2.append(ord(i))
+        
+        print (cypherText2)
+        instance = aes.AESModeOfOperation()
+        initialVector = [103, 35, 148, 239, 76, 213, 47, 118,255, 222, 123, 176, 106, 134, 98, 92]
+
+        if mode == 0: # OFB
+            encodeMode = "OFB"
+        elif mode == 1: # CFB
+            encodeMode = "CFB"
+        elif mode == 2: # CBC
+            encodeMode = "CBC"        
+        
+        plainText = instance.decrypt(cypherText2,None,encodeMode,cypherKey,instance.aes.keySize["SIZE_128"],initialVector)
+        
+        self.textAESPlain.setPlainText(plainText)
         
         
     # Create functions for DES
@@ -376,6 +414,7 @@ class MyTableWidget(QWidget):
         mode = self.comboDESMode.currentIndex()
         key = self.textDESKey.toPlainText()
         plainText = self.textDESPlain.toPlainText()
+        
         instance = cryptography_des.CryptographyDES()
         instance.set_work_mode(mode)
         instance.set_plain_text(plainText)
