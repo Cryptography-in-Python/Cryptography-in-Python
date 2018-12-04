@@ -1,5 +1,5 @@
 
-class CryptographyVigenere():
+class CryptographyVigenere(object):
 
 	def __init__(self):
 		self._start_from = 32
@@ -17,21 +17,23 @@ class CryptographyVigenere():
 	def get_plain_alpha(self, cipher_letter:int, key_letter:int) -> int:
 		return self._table[key_letter - self._start_from].index(cipher_letter) + self._start_from
 
-	def encrypt(self, plain_text, key):
-		result = []
-		while len(key) < len(plain_text):
+	@staticmethod
+	def pad_key(key:str, length:int) -> str:
+		while len(key) < length:
 			key += key
-		key = key[:len(plain_text)]
+		return key[:length]
+	
+	def encrypt(self, plain_text:str, key:str) -> str:
+		result = []
+		key = CryptographyVigenere.pad_key(key, len(plain_text))
 
 		for plain, k in zip(plain_text, key):
 			result.append(chr(self.get_cipher_alpha(ord(plain), ord(k))))
 		return "".join(result)
 
-	def decrypt(self, cipher_text, key):
+	def decrypt(self, cipher_text:str, key:str) -> str:
 		result = []
-		while len(key) < len(cipher_text):
-			key += key
-		key = key[:len(cipher_text)]
+		key = CryptographyVigenere.pad_key(key, len(cipher_text))
 
 		for cipher, k in zip(cipher_text, key):
 			result.append(chr(self.get_plain_alpha(ord(cipher), ord(k))))
