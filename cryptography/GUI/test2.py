@@ -115,16 +115,16 @@ class Example(QWidget):
 
     def onAlgorithmChoosed(self, text):
         self.__algorithm = text
-        print(f'Chose encription algorithm {text}')
+        print('Chose encription algorithm', text)
         # self.testlabel.setPlainText(self.textBox.toPlainText())
 
     def onModeChoosed(self, text):
         self.__cypher_aes['encode_mode'] = text
-        print(f'Chose encode mode {text}')
+        print('Chose encode mode ',text)
         # self.testlabel.setPlainText(self.textBox.toPlainText())
 
     def _encrypt(self):
-        print(f'start encription using {self.__algorithm}.')
+        print('start encription using', self.__algorithm)
         instance = None
         if self.__algorithm == "AES":
             instance = aes.AESModeOfOperation()
@@ -165,7 +165,7 @@ class Example(QWidget):
             self.textBox3.setPlainText(sha1.shaone(self.textBox.toPlainText()))
 
     def _decrypt(self):
-        print(f'start decription using {self.__algorithm}.')
+        print('start decription using' ,self.__algorithm)
         instance = None
         if self.__algorithm == "AES":
             instance = aes.AESModeOfOperation()
