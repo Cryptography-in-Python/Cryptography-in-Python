@@ -450,7 +450,7 @@ class AESModeOfOperation(object):
                 if  end > len(stringIn):
                     end = len(stringIn)
                 plaintext = self.convertString(stringIn, start, end, mode)
-                # print 'PT@%s:%s' % (j, plaintext)
+
                 if mode == self.modeOfOperation["CFB"]:
                     if firstRound:
                         output = self.aes.encrypt(IV, key, size)
@@ -493,7 +493,6 @@ class AESModeOfOperation(object):
                             iput[i] =  plaintext[i] ^ IV[i]
                         else:
                             iput[i] =  plaintext[i] ^ ciphertext[i]
-                    # print 'IP@%s:%s' % (j, iput)
                     firstRound = False
                     ciphertext = self.aes.encrypt(iput, key, size)
                     # always 16 bytes because of the padding for CBC

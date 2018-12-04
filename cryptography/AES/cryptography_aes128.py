@@ -10,13 +10,13 @@ class CryptographyAES128(CryptographyBase):
     HALF_BLOCK = 64
     EXCHANGE_NUM = 16
     KEY_SIZE = 128
-
+    
     # _current_key = [bitarray(32), bitarray(32), bitarray(32), bitarray(32)]
     _previous_key = bitarray(128)
     def __init__(self):
         pass
 
-    def encrypt(self):
+    def encrypt(self, iput, key, size):
         '''
         encrypt the message with AES
         '''
@@ -28,31 +28,44 @@ class CryptographyAES128(CryptographyBase):
 
         print("Pre-Process Length:", self._plain_text.length())  # debug
          
-        fix=128 - self._plain_text.length() % 128
-        for i in range(fix):
-            self._plain_text = self._plain_text+bitarray('0')
-            
-        self._cipher_text = bitarray(self._plain_text.length())
-        block_num = int(self._plain_text.length() / 128)
-        for i in range(block_num):
-            block = self._plain_text[i:i+128]
-            #init
-            self._current_key= set_first_key(self._user_supplied_key)
-            block = GF2Add(self._current_key,block)
-            #round 1 to 9
-            for round in range(1,10):
-                print('round',round)
-                block=subBytes(block)
-                block=shiftRows(block)
-                block=mixColumn(block)
-                [self._current_key,self._previous_key]=update_round_key(self._current_key,self._previous_key,round)
-                block = GF2Add(self._current_key,block)
-            #round 10
-            block=subBytes(block)
-            block=shiftRows(block)
-            [self._current_key,self._previous_key]=update_round_key(self._current_key,self._previous_key,round)
-            block = GF2Add(self._current_key,block)
-            self._cipher_text[i:i+128]=block
+        # encrypt(self, iput, key, size):
+        output = [0] * 16
+        # the number of rounds
+        nbrRounds = 0
+        # the 128 bit block to encode
+        block = [0] * 16
+        # set the number of rounds
+        nbrRounds = 10
+
+        # the expanded keySize
+        expandedKeySize = 16*(nbrRounds+1)
+
+        # Set the block values, for the block:
+        # a0,0 a0,1 a0,2 a0,3
+        # a1,0 a1,1 a1,2 a1,3
+        # a2,0 a2,1 a2,2 a2,3
+        # a3,0 a3,1 a3,2 a3,3
+        # the mapping order is a0,0 a1,0 a2,0 a3,0 a0,1 a1,1 ... a2,3 a3,3
+        #
+        # iterate over the columns
+        for i in range(4):
+            # iterate over the rows
+            for j in range(4):
+                block[(i+(j*4))] = iput[(i*4)+j]
+
+        # expand the key into an 176, 208, 240 bytes key
+        # the expanded key
+        expandedKey = expandKey(key, size, expandedKeySize)
+
+        # encrypt the block using the expandedKey
+        block = aes_main(block, expandedKey, nbrRounds)
+
+        # unmap the block again into the output
+        for k in range(4):
+            # iterate over the rows
+            for l in range(4):
+                output[(k*4)+l] = block[(k+(l*4))]
+        return output
         
 
     def decrypt(self):
