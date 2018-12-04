@@ -115,7 +115,7 @@ class Example(QWidget):
 
     def onAlgorithmChoosed(self, text):
         self.__algorithm = text
-        #print(f'Chose encription algorithm {text}')
+        print('Chose encription algorithm', text)
         # self.testlabel.setPlainText(self.textBox.toPlainText())
 
     def onModeChoosed(self, text):
