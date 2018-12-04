@@ -359,11 +359,15 @@ class MyTableWidget(QWidget):
     def _AESEncrypt(self):
         mode = self.comboAESMode.currentIndex()
         key = self.textAESKey.toPlainText()
-        print(key)
+        if len(key)>16:
+            key = key[:16]
+        elif len(key)<16:
+            key = key + " "*(16-len(key))
+        #print(key)
         cypherKey = []
         for i in key:
             cypherKey.append(ord(i))
-        print(cypherKey)
+        #print(cypherKey)
         
         plainText = self.textAESPlain.toPlainText()
         
@@ -377,14 +381,22 @@ class MyTableWidget(QWidget):
             encodeMode = "CFB"
         elif mode == 2: # CBC
             encodeMode = "CBC"
+        
+        #instanceMode = instance.modeOfOperation[encodeMode]
+        #instance.aes.keySize["SIZE_128"]
         #print(type(plainText),type(instance.modeOfOperation[encodeMode]),type(cypherKey),type(instance.aes.keySize["SIZE_128"]),type(initialVector))
         modeAES,lengthAES,cypherText = instance.encrypt(plainText,instance.modeOfOperation[encodeMode],cypherKey,instance.aes.keySize["SIZE_128"],initialVector)
         
         self.textAESCypher.setPlainText("".join(chr(x) for x in cypherText))
+        #print(cypherText)
         
     def _AESDecrypt(self):
         mode = self.comboAESMode.currentIndex()
         key = self.textAESKey.toPlainText()
+        if len(key)>16:
+            key = key[:16]
+        elif len(key)<16:
+            key = key + " "*(16-len(key))
         cypherKey = []
         for i in key:
             cypherKey.append(ord(i))
@@ -393,7 +405,7 @@ class MyTableWidget(QWidget):
         for i in cypherText:
             cypherText2.append(ord(i))
         
-        print (cypherText2)
+        #print (cypherText2)
         instance = aes.AESModeOfOperation()
         initialVector = [103, 35, 148, 239, 76, 213, 47, 118,255, 222, 123, 176, 106, 134, 98, 92]
 
@@ -404,8 +416,8 @@ class MyTableWidget(QWidget):
         elif mode == 2: # CBC
             encodeMode = "CBC"        
         
-        plainText = instance.decrypt(cypherText2,None,encodeMode,cypherKey,instance.aes.keySize["SIZE_128"],initialVector)
-        
+        plainText = instance.decrypt(cypherText2,None,mode,cypherKey,instance.aes.keySize["SIZE_128"],initialVector)
+        #print(plainText)
         self.textAESPlain.setPlainText(plainText)
         
         
