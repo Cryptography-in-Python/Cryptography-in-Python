@@ -57,18 +57,21 @@ class MyTableWidget(QWidget):
         self.tabs.addTab(self.tabSHA,"SHA1")
         self.tabs.addTab(self.tabVIG,"VIG")
  
-        # Create first tab
-        self.tabAES.layout = QVBoxLayout(self)
+        # Create AES tab
         
         self.labelAESKey      = QLabel("Key:",self)
         self.labelAESPlain    = QLabel("Plain Text:",self)
-        self.labelAESCypher   = QLabel("Cypther Text:",self)
+        self.labelAESCypher   = QLabel("Cipher Text:",self)
         self.buttonAESEncrypt = QPushButton("Encrypt",self)
         self.buttonAESDecrypt = QPushButton("Decrypt",self)
         self.textAESPlain     = QPlainTextEdit(self)
         self.textAESCypher    = QPlainTextEdit(self)
         self.textAESKey       = QPlainTextEdit(self)
+        self.comboAESMode     = QComboBox(self)
         
+        self.comboAESMode.addItem("OFB")
+        self.comboAESMode.addItem("CFB")
+        self.comboAESMode.addItem("CBC")
         
         self.layoutAESButton = QVBoxLayout()
         self.layoutAESButton.addStretch()
@@ -90,18 +93,227 @@ class MyTableWidget(QWidget):
         self.layoutAESText.addLayout(self.layoutAESButton)
         self.layoutAESText.addLayout(self.layoutAESRight)
         
-        
         self.layoutAESKey = QHBoxLayout()
         self.layoutAESKey.addWidget(self.labelAESKey)
         self.layoutAESKey.addWidget(self.textAESKey)
+        self.layoutAESKey.addWidget(self.comboAESMode)
         
         self.layoutAES = QVBoxLayout()
         self.layoutAES.addLayout(self.layoutAESKey)
         self.layoutAES.addLayout(self.layoutAESText)
         
-        
         self.tabAES.setLayout(self.layoutAES)
-        self.textAESKey.setFixedHeight(40) 
+        self.textAESKey.setFixedHeight(self.labelAESKey.font().pointSize()*4) 
+        
+        # Create DES tab
+        
+        self.labelDESKey      = QLabel("Key:",self)
+        self.labelDESPlain    = QLabel("Plain Text:",self)
+        self.labelDESCypher   = QLabel("Cipher Text:",self)
+        self.buttonDESEncrypt = QPushButton("Encrypt",self)
+        self.buttonDESDecrypt = QPushButton("Decrypt",self)
+        self.textDESPlain     = QPlainTextEdit(self)
+        self.textDESCypher    = QPlainTextEdit(self)
+        self.textDESKey       = QPlainTextEdit(self)
+        
+        self.layoutDESButton = QVBoxLayout()
+        self.layoutDESButton.addStretch()
+        self.layoutDESButton.addWidget(self.buttonDESEncrypt)
+        self.layoutDESButton.addStretch()
+        self.layoutDESButton.addWidget(self.buttonDESDecrypt)
+        self.layoutDESButton.addStretch()
+        
+        self.layoutDESLeft = QVBoxLayout()
+        self.layoutDESLeft.addWidget(self.labelDESPlain)
+        self.layoutDESLeft.addWidget(self.textDESPlain)
+        
+        self.layoutDESRight = QVBoxLayout()
+        self.layoutDESRight.addWidget(self.labelDESCypher)
+        self.layoutDESRight.addWidget(self.textDESCypher)
+        
+        self.layoutDESText = QHBoxLayout()
+        self.layoutDESText.addLayout(self.layoutDESLeft)
+        self.layoutDESText.addLayout(self.layoutDESButton)
+        self.layoutDESText.addLayout(self.layoutDESRight)
+        
+        self.layoutDESKey = QHBoxLayout()
+        self.layoutDESKey.addWidget(self.labelDESKey)
+        self.layoutDESKey.addWidget(self.textDESKey)
+        
+        self.layoutDES = QVBoxLayout()
+        self.layoutDES.addLayout(self.layoutDESKey)
+        self.layoutDES.addLayout(self.layoutDESText)
+        
+        self.tabDES.setLayout(self.layoutDES)
+        self.textDESKey.setFixedHeight(40) 
+        
+        # Create MD5 tab
+        
+        self.labelMD5Key      = QLabel("Key:",self)
+        self.labelMD5Plain    = QLabel("Plain Text:",self)
+        self.labelMD5Cypher   = QLabel("Cipher Text:",self)
+        self.buttonMD5Encrypt = QPushButton("Encrypt",self)
+        self.buttonMD5Decrypt = QPushButton("Decrypt",self)
+        self.textMD5Plain     = QPlainTextEdit(self)
+        self.textMD5Cypher    = QPlainTextEdit(self)
+        self.textMD5Key       = QPlainTextEdit(self)
+        
+        self.layoutMD5Button = QVBoxLayout()
+        self.layoutMD5Button.addStretch()
+        self.layoutMD5Button.addWidget(self.buttonMD5Encrypt)
+        self.layoutMD5Button.addStretch()
+        self.layoutMD5Button.addWidget(self.buttonMD5Decrypt)
+        self.layoutMD5Button.addStretch()
+        
+        self.layoutMD5Left = QVBoxLayout()
+        self.layoutMD5Left.addWidget(self.labelMD5Plain)
+        self.layoutMD5Left.addWidget(self.textMD5Plain)
+        
+        self.layoutMD5Right = QVBoxLayout()
+        self.layoutMD5Right.addWidget(self.labelMD5Cypher)
+        self.layoutMD5Right.addWidget(self.textMD5Cypher)
+        
+        self.layoutMD5Text = QHBoxLayout()
+        self.layoutMD5Text.addLayout(self.layoutMD5Left)
+        self.layoutMD5Text.addLayout(self.layoutMD5Button)
+        self.layoutMD5Text.addLayout(self.layoutMD5Right)
+        
+        self.layoutMD5Key = QHBoxLayout()
+        self.layoutMD5Key.addWidget(self.labelMD5Key)
+        self.layoutMD5Key.addWidget(self.textMD5Key)
+        
+        self.layoutMD5 = QVBoxLayout()
+        self.layoutMD5.addLayout(self.layoutMD5Key)
+        self.layoutMD5.addLayout(self.layoutMD5Text)
+        
+        self.tabMD5.setLayout(self.layoutMD5)
+        self.textMD5Key.setFixedHeight(40) 
+        
+        # Create RSA tab
+        
+        self.labelRSAKey      = QLabel("Key:",self)
+        self.labelRSAPlain    = QLabel("Plain Text:",self)
+        self.labelRSACypher   = QLabel("Cipher Text:",self)
+        self.buttonRSAEncrypt = QPushButton("Encrypt",self)
+        self.buttonRSADecrypt = QPushButton("Decrypt",self)
+        self.textRSAPlain     = QPlainTextEdit(self)
+        self.textRSACypher    = QPlainTextEdit(self)
+        self.textRSAKey       = QPlainTextEdit(self)
+        
+        self.layoutRSAButton = QVBoxLayout()
+        self.layoutRSAButton.addStretch()
+        self.layoutRSAButton.addWidget(self.buttonRSAEncrypt)
+        self.layoutRSAButton.addStretch()
+        self.layoutRSAButton.addWidget(self.buttonRSADecrypt)
+        self.layoutRSAButton.addStretch()
+        
+        self.layoutRSALeft = QVBoxLayout()
+        self.layoutRSALeft.addWidget(self.labelRSAPlain)
+        self.layoutRSALeft.addWidget(self.textRSAPlain)
+        
+        self.layoutRSARight = QVBoxLayout()
+        self.layoutRSARight.addWidget(self.labelRSACypher)
+        self.layoutRSARight.addWidget(self.textRSACypher)
+        
+        self.layoutRSAText = QHBoxLayout()
+        self.layoutRSAText.addLayout(self.layoutRSALeft)
+        self.layoutRSAText.addLayout(self.layoutRSAButton)
+        self.layoutRSAText.addLayout(self.layoutRSARight)
+        
+        self.layoutRSAKey = QHBoxLayout()
+        self.layoutRSAKey.addWidget(self.labelRSAKey)
+        self.layoutRSAKey.addWidget(self.textRSAKey)
+        
+        self.layoutRSA = QVBoxLayout()
+        self.layoutRSA.addLayout(self.layoutRSAKey)
+        self.layoutRSA.addLayout(self.layoutRSAText)
+        
+        self.tabRSA.setLayout(self.layoutRSA)
+        self.textRSAKey.setFixedHeight(40) 
+        
+        # Create SHA tab
+        
+        self.labelSHAKey      = QLabel("Key:",self)
+        self.labelSHAPlain    = QLabel("Plain Text:",self)
+        self.labelSHACypher   = QLabel("Cipher Text:",self)
+        self.buttonSHAEncrypt = QPushButton("Encrypt",self)
+        self.buttonSHADecrypt = QPushButton("Decrypt",self)
+        self.textSHAPlain     = QPlainTextEdit(self)
+        self.textSHACypher    = QPlainTextEdit(self)
+        self.textSHAKey       = QPlainTextEdit(self)
+        
+        self.layoutSHAButton = QVBoxLayout()
+        self.layoutSHAButton.addStretch()
+        self.layoutSHAButton.addWidget(self.buttonSHAEncrypt)
+        self.layoutSHAButton.addStretch()
+        self.layoutSHAButton.addWidget(self.buttonSHADecrypt)
+        self.layoutSHAButton.addStretch()
+        
+        self.layoutSHALeft = QVBoxLayout()
+        self.layoutSHALeft.addWidget(self.labelSHAPlain)
+        self.layoutSHALeft.addWidget(self.textSHAPlain)
+        
+        self.layoutSHARight = QVBoxLayout()
+        self.layoutSHARight.addWidget(self.labelSHACypher)
+        self.layoutSHARight.addWidget(self.textSHACypher)
+        
+        self.layoutSHAText = QHBoxLayout()
+        self.layoutSHAText.addLayout(self.layoutSHALeft)
+        self.layoutSHAText.addLayout(self.layoutSHAButton)
+        self.layoutSHAText.addLayout(self.layoutSHARight)
+        
+        self.layoutSHAKey = QHBoxLayout()
+        self.layoutSHAKey.addWidget(self.labelSHAKey)
+        self.layoutSHAKey.addWidget(self.textSHAKey)
+        
+        self.layoutSHA = QVBoxLayout()
+        self.layoutSHA.addLayout(self.layoutSHAKey)
+        self.layoutSHA.addLayout(self.layoutSHAText)
+        
+        self.tabSHA.setLayout(self.layoutSHA)
+        self.textSHAKey.setFixedHeight(40) 
+        
+        # Create VIG tab
+        
+        self.labelVIGKey      = QLabel("Key:",self)
+        self.labelVIGPlain    = QLabel("Plain Text:",self)
+        self.labelVIGCypher   = QLabel("Cipher Text:",self)
+        self.buttonVIGEncrypt = QPushButton("Encrypt",self)
+        self.buttonVIGDecrypt = QPushButton("Decrypt",self)
+        self.textVIGPlain     = QPlainTextEdit(self)
+        self.textVIGCypher    = QPlainTextEdit(self)
+        self.textVIGKey       = QPlainTextEdit(self)
+        
+        self.layoutVIGButton = QVBoxLayout()
+        self.layoutVIGButton.addStretch()
+        self.layoutVIGButton.addWidget(self.buttonVIGEncrypt)
+        self.layoutVIGButton.addStretch()
+        self.layoutVIGButton.addWidget(self.buttonVIGDecrypt)
+        self.layoutVIGButton.addStretch()
+        
+        self.layoutVIGLeft = QVBoxLayout()
+        self.layoutVIGLeft.addWidget(self.labelVIGPlain)
+        self.layoutVIGLeft.addWidget(self.textVIGPlain)
+        
+        self.layoutVIGRight = QVBoxLayout()
+        self.layoutVIGRight.addWidget(self.labelVIGCypher)
+        self.layoutVIGRight.addWidget(self.textVIGCypher)
+        
+        self.layoutVIGText = QHBoxLayout()
+        self.layoutVIGText.addLayout(self.layoutVIGLeft)
+        self.layoutVIGText.addLayout(self.layoutVIGButton)
+        self.layoutVIGText.addLayout(self.layoutVIGRight)
+        
+        self.layoutVIGKey = QHBoxLayout()
+        self.layoutVIGKey.addWidget(self.labelVIGKey)
+        self.layoutVIGKey.addWidget(self.textVIGKey)
+        
+        self.layoutVIG = QVBoxLayout()
+        self.layoutVIG.addLayout(self.layoutVIGKey)
+        self.layoutVIG.addLayout(self.layoutVIGText)
+        
+        self.tabVIG.setLayout(self.layoutVIG)
+        self.textVIGKey.setFixedHeight(40) 
         # Add tabs to widget        
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
