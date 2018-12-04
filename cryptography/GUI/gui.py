@@ -147,7 +147,7 @@ class MyTableWidget(QWidget):
         self.layoutDESLeft = QVBoxLayout()
         self.layoutDESLeft.addWidget(self.labelDESPlain)
         self.layoutDESLeft.addWidget(self.textDESPlain)
-        self.layoudDESLeft.addLayout(self.layoutDESLeftButtom)
+        self.layoutDESLeft.addLayout(self.layoutDESLeftButtom)
         
         self.layoutDESRightButtom = QHBoxLayout()
         self.layoutDESRightButtom.addWidget(self.buttonDESDecrypt)
@@ -494,8 +494,8 @@ class MyTableWidget(QWidget):
         if fileName:
             self.filePath = fileName
             self.labelDESPlainFile.setText(fileName)
-
-   	def _DESDecryptFile(self):
+    
+    def _DESDecryptFile(self):
         pass
 
     # Create function for MD5 
