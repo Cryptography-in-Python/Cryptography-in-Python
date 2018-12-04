@@ -393,7 +393,7 @@ class AESModeOfOperation(object):
         '''
         set the keys from users
         '''
-        print(f'plain text key is {key}')
+        print('plain text key is ',key)
         int_key=[]
         for x in key:
             int_key.append(ord(x))
