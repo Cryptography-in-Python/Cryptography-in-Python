@@ -3,12 +3,8 @@ import sys
 import math
 
 class AES(object):
-    '''AES funtions for a single block
-    '''
-    # valid key sizes
-    keySize = dict(SIZE_128=16)
+    keySize = dict(SIZE_128=16, SIZE_192=32, SIZE_256=64)
 
-    #S-box
     sbox =  [0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67,
             0x2b, 0xfe, 0xd7, 0xab, 0x76, 0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59,
             0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0, 0xb7,
@@ -34,7 +30,6 @@ class AES(object):
             0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0,
             0x54, 0xbb, 0x16]
 
-    #Inverted S-box
     rsbox = [0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3,
             0x9e, 0x81, 0xf3, 0xd7, 0xfb , 0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f,
             0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb , 0x54,
@@ -60,10 +55,10 @@ class AES(object):
             0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55,
             0x21, 0x0c, 0x7d]
 
-    def getSBoxValue(self,num):
+    def getSBoxVal(self,num):
         return self.sbox[num]
 
-    def getSBoxInvert(self,num):
+    def getSBoxInv(self,num):
         return self.rsbox[num]
 
     def rotate(self, word):
@@ -98,14 +93,13 @@ class AES(object):
     def getRconValue(self, num):
         return self.Rcon[num]
 
-    def core(self, word, iteration):
-        # rotate the 32-bit word 8 bits to the left
+    def _main(self, word, iteration):
+        
         word = self.rotate(word)
-        # apply S-Box substitution on all 4 parts of the 32-bit word
+        
         for i in range(4):
-            word[i] = self.getSBoxValue(word[i])
-        # XOR the output of the rcon operation with i to the first part
-        # (leftmost) only
+            word[i] = self.getSBoxVal(word[i])
+            
         word[0] = word[0] ^ self.getRconValue(iteration)
         return word
 
@@ -123,15 +117,13 @@ class AES(object):
         while currentSize < expandedKeySize:
             # assign the previous 4 bytes to the temporary value t
             t = expandedKey[currentSize-4:currentSize]
-
-            # every 16,24,32 bytes we apply the core schedule to t
-            # and increment rconIteration afterwards
+            
             if currentSize % size == 0:
-                t = self.core(t, rconIteration)
+                t = self._main(t, rconIteration)
                 rconIteration += 1
             # For 256-bit keys, we add an extra sbox to the calculation
             if size == self.keySize["SIZE_256"] and ((currentSize % size) == 16):
-                for l in range(4): t[l] = self.getSBoxValue(t[l])
+                for l in range(4): t[l] = self.getSBoxVal(t[l])
             for m in range(4):
                 expandedKey[currentSize] = expandedKey[currentSize - size] ^ \
                         t[m]
@@ -153,7 +145,7 @@ class AES(object):
 
     def galois_multiplication(self, a, b):
         p = 0
-        for counter in range(8):
+        for i in range(8):
             if b & 1: p ^= a
             hi_bit_set = a & 0x80
             a <<= 1
@@ -165,8 +157,8 @@ class AES(object):
         return p
 
     def subBytes(self, state, isInv):
-        if isInv: getter = self.getSBoxInvert
-        else: getter = self.getSBoxValue
+        if isInv: getter = self.getSBoxInv
+        else: getter = self.getSBoxVal
         for i in range(16): state[i] = getter(state[i])
         return state
 
