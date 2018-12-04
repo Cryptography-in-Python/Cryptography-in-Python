@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ..sha1 import sha1
+from ..DES import cryptography_des
 from ..MD5 import cryptography_md5
 from ..RSA import cryptography_rsa
 from ..AES import aes
@@ -13,9 +14,9 @@ import sys
 import os
 sys.path.append(os.path.abspath('../AES'))
 
-INITIAL_WIDTH = 800
-INITIAL_HEIGHT= 600
-
+INITIAL_WIDTH  = 800
+INITIAL_HEIGHT = 600
+TEXT_HEIGHT    = 40
 class App(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -103,7 +104,7 @@ class MyTableWidget(QWidget):
         self.layoutAES.addLayout(self.layoutAESText)
         
         self.tabAES.setLayout(self.layoutAES)
-        self.textAESKey.setFixedHeight(40) 
+        self.textAESKey.setFixedHeight(TEXT_HEIGHT) 
         
         self.buttonAESEncrypt.clicked.connect(self._AESEncrypt)
         self.buttonAESDecrypt.clicked.connect(self._AESDecrypt)
@@ -113,14 +114,16 @@ class MyTableWidget(QWidget):
         self.labelDESKey      = QLabel("Key:",self)
         self.labelDESPlain    = QLabel("Plain Text:",self)
         self.labelDESCypher   = QLabel("Cipher Text:",self)
+        self.labelDESInitVec  = QLabel("Initial vector:",self)
         self.buttonDESEncrypt = QPushButton("Encrypt",self)
         self.buttonDESDecrypt = QPushButton("Decrypt",self)
         self.textDESPlain     = QPlainTextEdit(self)
         self.textDESCypher    = QPlainTextEdit(self)
         self.textDESKey       = QPlainTextEdit(self)
+        self.textDESInitVec   = QPlainTextEdit(self)
         self.comboDESMode     = QComboBox(self)
         
-        self.comboDESMode.addItem("EBC")
+        self.comboDESMode.addItem("ECB")
         self.comboDESMode.addItem("CBC")
         self.comboDESMode.addItem("3-DES")
         
@@ -144,17 +147,31 @@ class MyTableWidget(QWidget):
         self.layoutDESText.addLayout(self.layoutDESButton)
         self.layoutDESText.addLayout(self.layoutDESRight)
         
-        self.layoutDESKey = QHBoxLayout()
-        self.layoutDESKey.addWidget(self.labelDESKey)
-        self.layoutDESKey.addWidget(self.textDESKey)
-        self.layoutDESKey.addWidget(self.comboDESMode)
+        
+        
+        self.layoutDESKeyKey = QHBoxLayout()
+        self.layoutDESKeyKey.addWidget(self.labelDESKey)
+        self.layoutDESKeyKey.addWidget(self.textDESKey)
+        self.layoutDESKeyKey.addWidget(self.comboDESMode)
+        
+        self.layoutDESInitVec = QHBoxLayout()
+        self.layoutDESInitVec.addWidget(self.labelDESInitVec)
+        self.layoutDESInitVec.addWidget(self.textDESInitVec)
+        
+        self.layoutDESKey = QVBoxLayout()
+        self.layoutDESKey.addLayout(self.layoutDESKeyKey)
+        self.layoutDESKey.addLayout(self.layoutDESInitVec)
         
         self.layoutDES = QVBoxLayout()
         self.layoutDES.addLayout(self.layoutDESKey)
         self.layoutDES.addLayout(self.layoutDESText)
         
         self.tabDES.setLayout(self.layoutDES)
-        self.textDESKey.setFixedHeight(40) 
+        self.textDESKey.setFixedHeight(TEXT_HEIGHT) 
+        self.textDESInitVec.setFixedHeight(TEXT_HEIGHT)
+        
+        self.buttonDESEncrypt.clicked.connect(self._DESEncrypt)
+        self.buttonDESDecrypt.clicked.connect(self._DESDecrypt)
         
         # Create MD5 tab
         
@@ -248,9 +265,9 @@ class MyTableWidget(QWidget):
         
         self.tabRSA.setLayout(self.layoutRSA)
         
-        self.textRSAKeyLength.setFixedHeight(40)
-        self.textRSAPrivateKey.setFixedHeight(40)
-        self.textRSAEulerTotient.setFixedHeight(40)
+        self.textRSAKeyLength.setFixedHeight(TEXT_HEIGHT)
+        self.textRSAPrivateKey.setFixedHeight(TEXT_HEIGHT)
+        self.textRSAEulerTotient.setFixedHeight(TEXT_HEIGHT)
         
         # Create SHA tab
         
@@ -326,7 +343,7 @@ class MyTableWidget(QWidget):
         self.layoutVIG.addLayout(self.layoutVIGText)
         
         self.tabVIG.setLayout(self.layoutVIG)
-        self.textVIGKey.setFixedHeight(40) 
+        self.textVIGKey.setFixedHeight(TEXT_HEIGHT) 
         
         self.buttonVIGEncrypt.clicked.connect(self._VIGEncrypt)
         self.buttonVIGDecrypt.clicked.connect(self._VIGDecrypt)
@@ -350,7 +367,54 @@ class MyTableWidget(QWidget):
         print("exit")
         pass 
         
-    
+    def _DESEncrypt(self):
+        mode = self.comboDESMode.currentIndex()
+        key = self.textDESKey.toPlainText()
+        plainText = self.textDESPlain.toPlainText()
+        instance = cryptography_des.CryptographyDES()
+        instance.set_work_mode(mode)
+        instance.set_key(key)
+        instance.set_plain_text(plainText)
+        
+        if mode == 0: # ECB
+            instance.encrypt()
+        elif mode == 1: # CBC
+            vec = instance.get_init_vector()
+            instance.encrypt()
+            self.textDESInitVec.setPlainText(vec)
+        elif mode == 2: # 3 DES
+            keys = self.textDESKey.toPlainText().split(" ")
+            for key in keys:
+                print(key)
+                instance.set_key(key)
+            instance.encrypt()
+        
+        cypherText = instance.get_cipher_text()  
+        self.textDESCypher.setPlainText(cypherText)  
+        
+    def _DESDecrypt(self):
+        mode = self.comboDESMode.currentIndex()
+        key = self.textDESKey.toPlainText()
+        cypherText = self.textDESCypher.toPlainText()
+        instance = cryptography_des.CryptographyDES()
+        instance.set_work_mode(mode)
+        instance.set_key(key)
+        instance.set_cipher_text(cypherText)
+        
+        if mode == 0: # ECB
+            instance.decrypt()
+        elif mode == 1: # CBC
+            vec = self.textDESInitVec.toPlainText()
+            instance.set_init_vector(vec)
+            instance.decrypt()
+        elif mode == 2: # 3 DES
+            keys = self.textDESKey.toPlainText().split(" ")
+            for key in keys:
+                instance.set_key(key)
+            instance.decrypt()
+        
+        plainText = instance.get_plain_text()  
+        self.textDESPlain.setPlainText(plainText)  
     # Create function for MD5 
     def _MD5Hash(self):
         plainText = self.textMD5Plain.toPlainText()
