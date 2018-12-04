@@ -22,7 +22,7 @@ class CryptographyDES(CryptographyBase):
         self._WORK_MODE  = WORK_MODE_ECB
         self._ENCODING   = 'utf-8'
         self._key_chain  = []
-
+        self._need_padding = True
         self._kernel     = _DES()
 
     def encrypt(self):
@@ -127,7 +127,8 @@ class CryptographyDES(CryptographyBase):
                 )
                 self._plain_text += result.to_bytes(8, byteorder="big")
 
-        self._plain_text = unpad_bytes(self._plain_text, self._BLOCK_SIZE)
+        if self._need_padding:
+            self._plain_text = unpad_bytes(self._plain_text, self._BLOCK_SIZE)
 
     def set_plain_text(self, plain_text='') -> None:
         if isinstance(plain_text, str):
@@ -152,6 +153,10 @@ class CryptographyDES(CryptographyBase):
     def set_work_mode(self, work_mode:int):
         assert work_mode in CryptographyDES.ALL_WORK_MODES, "invalid work mode! (ECB|CBC|TRIPLE_DES)"
         self._WORK_MODE = work_mode
+
+    def set_padding(self, padding_mode=True):
+        assert padding_mode in (True, False)
+        self._need_padding = padding_mode
 
     def set_key(self, key:'a key, can be str, bytes or bitarray') -> None:
         '''

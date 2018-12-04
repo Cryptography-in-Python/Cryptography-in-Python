@@ -47,8 +47,8 @@ class FileEncryptor(object):
 if __name__ == "__main__":
     start = time.time()
     encryptor = FileEncryptor()
-    encryptor.register_plain_source("/Users/jeromemao/Desktop/cryptography/cryptography/DES/decrypted.mp4")
-    encryptor.register_encrypt_source("encrypted.mp4")
+    encryptor.register_plain_source("/Users/jeromemao/Desktop/cryptography/cryptography/DES/decrypted.png")
+    encryptor.register_encrypt_source("encrypted.png")
     encryptor.set_key("Nogizaka")
     encryptor.start_encrypt()
     end = time.time()
@@ -56,8 +56,8 @@ if __name__ == "__main__":
 
     start = time.time()
     decryptor = FileEncryptor()
-    decryptor.register_plain_source("decrypted.mp4")
-    decryptor.register_encrypt_source("encrypted.mp4")
+    decryptor.register_plain_source("decrypted.png")
+    decryptor.register_encrypt_source("encrypted.png")
     decryptor.set_key("Nogizaka")
     decryptor.start_decrypt()
     end = time.time()
