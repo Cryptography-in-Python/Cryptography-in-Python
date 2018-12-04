@@ -37,6 +37,8 @@ class MyTableWidget(QWidget):
  
     def __init__(self, parent):   
         super(QWidget, self).__init__(parent)
+
+        self.filePath = "" # file path for whatever file
         self.layout = QVBoxLayout(self)
  
         # Initialize tab screen
@@ -111,17 +113,21 @@ class MyTableWidget(QWidget):
         
         # Create DES tab
         
-        self.labelDESKey      = QLabel("Key:",self)
-        self.labelDESPlain    = QLabel("Plain Text:",self)
-        self.labelDESCypher   = QLabel("Cipher Text:",self)
-        self.labelDESInitVec  = QLabel("Initial vector:",self)
-        self.buttonDESEncrypt = QPushButton("Encrypt",self)
-        self.buttonDESDecrypt = QPushButton("Decrypt",self)
-        self.textDESPlain     = QPlainTextEdit(self)
-        self.textDESCypher    = QPlainTextEdit(self)
-        self.textDESKey       = QPlainTextEdit(self)
-        self.textDESInitVec   = QPlainTextEdit(self)
-        self.comboDESMode     = QComboBox(self)
+        self.labelDESKey          = QLabel("Key:",self)
+        self.labelDESPlain        = QLabel("Plain Text:",self)
+        self.labelDESCypher       = QLabel("Cipher Text:",self)
+        self.labelDESInitVec      = QLabel("Initial vector:",self)
+        self.labelDESPlainFile    = QLabel("",self)
+        self.labelDESCypherFile   = QLabel("",self) 
+        self.buttonDESEncrypt     = QPushButton("Encrypt",self)
+        self.buttonDESDecrypt     = QPushButton("Decrypt",self)
+        self.buttonDESEncryptFile = QPushButton("Encrypt file:",self)
+        self.buttonDESDecryptFile = QPushButton("Decrypt file:",self)
+        self.textDESPlain         = QPlainTextEdit(self)
+        self.textDESCypher        = QPlainTextEdit(self)
+        self.textDESKey           = QPlainTextEdit(self)
+        self.textDESInitVec       = QPlainTextEdit(self)
+        self.comboDESMode         = QComboBox(self)
         
         self.comboDESMode.addItem("ECB")
         self.comboDESMode.addItem("CBC")
@@ -134,10 +140,19 @@ class MyTableWidget(QWidget):
         self.layoutDESButton.addWidget(self.buttonDESDecrypt)
         self.layoutDESButton.addStretch()
         
+        self.layoutDESLeftButtom = QHBoxLayout()
+        self.layoutDESLeftButtom.addWidget(self.buttonDESEncrypt)
+        self.layoutDESLeftButtom.addWidget(self.labelDESPlainFile)
+
         self.layoutDESLeft = QVBoxLayout()
         self.layoutDESLeft.addWidget(self.labelDESPlain)
         self.layoutDESLeft.addWidget(self.textDESPlain)
+        self.layoudDESLeft.addLayout(self.layoutDESLeftButtom)
         
+        self.layoutDESRightButtom = QHBoxLayout()
+        self.layoutDESRightButtom.addWidget(self.buttonDESDecrypt)
+        self.layoutDESRightButtom.addWidget(self.labelDESCypherFile)
+
         self.layoutDESRight = QVBoxLayout()
         self.layoutDESRight.addWidget(self.labelDESCypher)
         self.layoutDESRight.addWidget(self.textDESCypher)
@@ -146,8 +161,6 @@ class MyTableWidget(QWidget):
         self.layoutDESText.addLayout(self.layoutDESLeft)
         self.layoutDESText.addLayout(self.layoutDESButton)
         self.layoutDESText.addLayout(self.layoutDESRight)
-        
-        
         
         self.layoutDESKeyKey = QHBoxLayout()
         self.layoutDESKeyKey.addWidget(self.labelDESKey)
@@ -172,6 +185,8 @@ class MyTableWidget(QWidget):
         
         self.buttonDESEncrypt.clicked.connect(self._DESEncrypt)
         self.buttonDESDecrypt.clicked.connect(self._DESDecrypt)
+        self.buttonDESEncryptFile.clicked.connect(self._DESEncryptFile)
+        self.buttonDESDecryptFile.clicked.connect(self._DESDecryptFile)
         
         # Create MD5 tab
         
@@ -472,7 +487,17 @@ class MyTableWidget(QWidget):
         
         plainText = instance.get_plain_text()  
         self.textDESPlain.setPlainText(plainText)
-      
+
+    def _DESEncryptFile(self):
+        options = QFileDialog.Options()
+        fileName, _ = QFileDialog.getOpenFileName(self,"Choose a .txt to encript", "","text Files (*.txt)", options=options)
+        if fileName:
+            self.filePath = fileName
+            self.labelDESPlainFile.setText(fileName)
+
+   	def _DESDecryptFile(self):
+        pass
+
     # Create function for MD5 
     def _MD5Hash(self):
         plainText = self.textMD5Plain.toPlainText()
