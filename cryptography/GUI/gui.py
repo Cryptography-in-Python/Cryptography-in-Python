@@ -269,6 +269,9 @@ class MyTableWidget(QWidget):
         self.textRSAPrivateKey.setFixedHeight(TEXT_HEIGHT)
         self.textRSAEulerTotient.setFixedHeight(TEXT_HEIGHT)
         
+        self.buttonRSAEncrypt.clicked.connect(self._RSAEncrypt)
+        self.buttonRSADecrypt.clicked.connect(self._RSADecrypt)
+       
         # Create SHA tab
         
         self.labelSHAPlain    = QLabel("Plain Text:",self)
@@ -367,25 +370,27 @@ class MyTableWidget(QWidget):
         print("exit")
         pass 
         
+        
+    # Create functions for DES
     def _DESEncrypt(self):
         mode = self.comboDESMode.currentIndex()
         key = self.textDESKey.toPlainText()
         plainText = self.textDESPlain.toPlainText()
         instance = cryptography_des.CryptographyDES()
         instance.set_work_mode(mode)
-        instance.set_key(key)
         instance.set_plain_text(plainText)
         
         if mode == 0: # ECB
+            instance.set_key(key)
             instance.encrypt()
         elif mode == 1: # CBC
+            instance.set_key(key)
             vec = instance.get_init_vector()
             instance.encrypt()
             self.textDESInitVec.setPlainText(vec)
         elif mode == 2: # 3 DES
             keys = self.textDESKey.toPlainText().split(" ")
             for key in keys:
-                print(key)
                 instance.set_key(key)
             instance.encrypt()
         
@@ -398,12 +403,13 @@ class MyTableWidget(QWidget):
         cypherText = self.textDESCypher.toPlainText()
         instance = cryptography_des.CryptographyDES()
         instance.set_work_mode(mode)
-        instance.set_key(key)
         instance.set_cipher_text(cypherText)
         
         if mode == 0: # ECB
+            instance.set_key(key)
             instance.decrypt()
         elif mode == 1: # CBC
+            instance.set_key(key)
             vec = self.textDESInitVec.toPlainText()
             instance.set_init_vector(vec)
             instance.decrypt()
@@ -414,14 +420,57 @@ class MyTableWidget(QWidget):
             instance.decrypt()
         
         plainText = instance.get_plain_text()  
-        self.textDESPlain.setPlainText(plainText)  
+        self.textDESPlain.setPlainText(plainText)
+      
     # Create function for MD5 
     def _MD5Hash(self):
         plainText = self.textMD5Plain.toPlainText()
         instance = cryptography_md5.CryptographyMD5()
         digest = instance.encrypt(plainText)
         self.textMD5Digest.setPlainText(digest)
+    
+    # Create function for RSA
+    def _RSAEncrypt(self):
+        plainText = self.textRSAPlain.toPlainText()
+        keyLength = self.textRSAKeyLength.toPlainText()
+        keyLength = int(keyLength)
         
+        instance = cryptography_rsa.CryptographyRSA(key_length=keyLength)
+        instance.set_plain_text(plainText)
+        instance.set_key(key='initial')
+        
+        keyChain = instance.get_key()
+        privateKey = keyChain["private_key"]
+        eulerTotient = keyChain["euler_totient"]
+        
+        instance.encrypt()
+        
+        cypherText = instance.get_cipher_text()
+        
+        self.textRSACypher.setPlainText(cypherText)
+        self.textRSAPrivateKey.setPlainText(str(privateKey))
+        self.textRSAEulerTotient.setPlainText(str(eulerTotient))
+        
+    def _RSADecrypt(self):
+        cypherText = self.textRSACypher.toPlainText()
+        keyLength = self.textRSAKeyLength.toPlainText()
+        keyLength = int(keyLength)
+        privateKey = self.textRSAPrivateKey.toPlainText()
+        privateKey = int(privateKey)
+        eulerTotient = self.textRSAEulerTotient.toPlainText()
+        eulerTotient = int(eulerTotient)
+        
+        instance = cryptography_rsa.CryptographyRSA(key_length=keyLength)
+        instance.set_key(key='private_key',
+                         private_key=privateKey,
+                         totient=eulerTotient)
+        instance.set_cipher_text(cypherText)
+        
+        instance.decrypt()
+        
+        plainText = instance.get_plain_text_as_string()
+        self.textRSAPlain.setPlainText(plainText)
+
     # Create function for SHA-1
     def _SHAHash(self):
         plainText = self.textSHAPlain.toPlainText()
