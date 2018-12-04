@@ -5,17 +5,19 @@ class CryptographyVigenere(object):
 		self._start_from = 32
 		self._end_to     = 127
 
-		self._table = []
-		for i in range(self._end_to - self._start_from):
-			first_half  = list(range(self._start_from + i, self._end_to))
-			second_half = list(range(self._start_from, self._start_from + i))
-			self._table.append(first_half + second_half)
-
 	def get_cipher_alpha(self, plain_letter:int, key_letter:int) -> int:
-		return self._table[key_letter - self._start_from][plain_letter - self._start_from]
+		offset = key_letter - self._start_from
+		row    = list(range(self._start_from + offset, self._end_to)) +\
+		list(range(self._start_from, self._start_from + offset))
+
+		return row[plain_letter - self._start_from]
 
 	def get_plain_alpha(self, cipher_letter:int, key_letter:int) -> int:
-		return self._table[key_letter - self._start_from].index(cipher_letter) + self._start_from
+		offset = key_letter - self._start_from
+		row    = list(range(self._start_from + offset, self._end_to)) +\
+		list(range(self._start_from, self._start_from + offset))
+
+		return row.index(cipher_letter) + self._start_from
 
 	@staticmethod
 	def pad_key(key:str, length:int) -> str:
@@ -42,7 +44,7 @@ class CryptographyVigenere(object):
 
 if __name__ == "__main__":
 	vigenere_instance = CryptographyVigenere()
-	cipher = vigenere_instance.encrypt("Hello World! qh3thqh", "blaha")
+	cipher = vigenere_instance.encrypt("Hello World! From Jerome???", "blaha")
 	plain  = vigenere_instance.decrypt(cipher, "blaha")
 	print("cipher is", cipher)
 	print("plain is", plain)
