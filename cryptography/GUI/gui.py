@@ -7,13 +7,14 @@ from ..MD5 import cryptography_md5
 from ..RSA import cryptography_rsa
 from ..AES import aes
 from ..VIG import cryptography_vigenere
-from PyQt5.QtWidgets import QWidget,QLabel, QPushButton,QComboBox,QApplication,QPlainTextEdit,QFileDialog, QMainWindow, QApplication,QVBoxLayout,QTabWidget,QHBoxLayout,QSpacerItem
+from PyQt5.QtWidgets import QWidget,QLabel, QPushButton,QComboBox,QApplication,QPlainTextEdit,QFileDialog, QMainWindow, QApplication,QVBoxLayout,QTabWidget,QHBoxLayout,QSpacerItem,QMessageBox
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtGui import QIcon
 
 import sys
 import os
 import os.path
+import time
 sys.path.append(os.path.abspath('../AES'))
 
 INITIAL_WIDTH  = 800
@@ -447,6 +448,7 @@ class MyTableWidget(QWidget):
         
         if plainText == "": # file encrypt
             if self.filePath:
+                start = time.time()
                 outputPath = os.path.dirname(self.filePath)
                 outputExpand = self.filePath.split(".")[-1]
                 outputPath = outputPath + "/encrypted" + "." + outputExpand
@@ -456,6 +458,12 @@ class MyTableWidget(QWidget):
                 encryptor.register_encrypt_source(outputPath)
                 encryptor.set_key(key)
                 encryptor.start_encrypt()
+                end = time.time()
+                msgBox = QMessageBox()
+                msgText= "Encrypt complete with " + "{:3f}".format((end-start))+"s"
+                msgBox.setText(msgText)
+                msgBox.setWindowTitle("Success")
+                msgBox.exec()
             else:# No input
                 msgBox = QMessageBox()
                 msgBox.setText("No input for encrypt")
@@ -489,6 +497,7 @@ class MyTableWidget(QWidget):
 
         if cypherText == "": #file encrypt
             if self.filePath:
+                start = time.time()
                 outputPath = os.path.dirname(self.filePath)
                 outputExpand = self.filePath.split(".")[-1]
                 outputPath = outputPath + "/decrypted" + "." + outputExpand
@@ -497,6 +506,12 @@ class MyTableWidget(QWidget):
                 decryptor.register_plain_source(outputPath)
                 decryptor.set_key(key)
                 decryptor.start_decrypt()
+                end = time.time()
+                msgBox = QMessageBox()
+                msgText= "Decrypt complete with " + "{:3f}".format((end-start))+"s"
+                msgBox.setText(msgText)
+                msgBox.setWindowTitle("Success")
+                msgBox.exec()
             else:# No input
                 msgBox = QMessageBox()
                 msgBox.setText("No input for decrypt")
