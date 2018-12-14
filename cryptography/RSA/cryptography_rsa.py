@@ -1,3 +1,4 @@
+import base64
 import binascii
 import struct
 
@@ -19,11 +20,11 @@ class CryptographyRSA(CryptographyBase):
 
     @check_variables("_plain_text", "_public_key", "_euler_totient")
     def encrypt(self):
-        self._cipher_text = (self._ENCRYPT(txt, self._public_key, self._euler_totient) for txt in self._plain_text)
+        self._cipher_text = [self._ENCRYPT(txt, self._public_key, self._euler_totient) for txt in self._plain_text]
     
     @check_variables("_cipher_text", "_private_key", "_euler_totient")
     def decrypt(self):
-        self._plain_text = (self._DECRYPT(txt, self._private_key, self._euler_totient) for txt in self._cipher_text)
+        self._plain_text = [self._DECRYPT(txt, self._private_key, self._euler_totient) for txt in self._cipher_text]
 
     def get_key(self) -> {str : int}:
         return {
@@ -97,8 +98,11 @@ class CryptographyRSA(CryptographyBase):
 
     @check_variables("_plain_text")
     def get_plain_text_as_string(self):
-        return ''.join([member.to_bytes(member.bit_length(), byteorder=self._BYTEORDER).decode().rstrip('\0')
-        for member in self._plain_text])
+        try:
+            return ''.join([member.to_bytes(member.bit_length(), byteorder=self._BYTEORDER).decode().rstrip('\0')
+            for member in self._plain_text])
+        except UnicodeDecodeError:
+            return " ".join([hex(member) for member in self.get_plain_text_as_bytes()])
 
     @check_variables("_cipher_text")
     def to_file(self, file_path:str) -> None:
