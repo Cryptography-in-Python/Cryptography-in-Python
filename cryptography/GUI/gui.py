@@ -567,8 +567,23 @@ class MyTableWidget(QWidget):
     def _RSAEncrypt(self):
         plainText = self.textRSAPlain.toPlainText()
         keyLength = self.textRSAKeyLength.toPlainText()
-        keyLength = int(keyLength)
-        
+        try:
+            keyLength = int(keyLength)
+        except ValueError:
+            msgBox = QMessageBox()
+            msgText= "Invalid Key length!"
+            msgBox.setText(msgText)
+            msgBox.setWindowTitle("Error")
+            msgBox.exec()
+            return
+        if keyLength < 512:
+            msgBox = QMessageBox()
+            msgText= "Does not accept key length to be less than 512!"
+            msgBox.setText(msgText)
+            msgBox.setWindowTitle("Error")
+            msgBox.exec()
+            return
+
         instance = cryptography_rsa.CryptographyRSA(key_length=keyLength)
         instance.set_plain_text(plainText)
         instance.set_key(key='initial')

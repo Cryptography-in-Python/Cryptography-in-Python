@@ -32,7 +32,7 @@ To run the AES cryptography, press 'Encrypt' to create the cypher text from the 
 
 ## DES cryptograhy
 
-The DES cryptography are implemented both in C and in python. The python version of DES are used to proof-of-feasible and the C version are for productive propose. The DES cryptography could support ECB, CBC and 3-DES modes. Users may also switch between the modes by choosing different modes in the combo box. Similar to the AES cryptography, the users also need to specify the keys used in the DES. The users may also need to give an initial vector when decrypting under the CBC mode. 
+The DES cryptography are implemented both in C and in python. The python version of DES is proof-of-feasible and the C version is for productive propose. The DES cryptography could support ECB, CBC and 3-DES modes. Users may also switch between the modes by choosing different modes in the combo box. Similar to the AES cryptography, the users also need to specify the keys used in the DES. The users may also need to give an initial vector when decrypting under the CBC mode. 
 
 Another feature the DES cryptography supports is the encryption and decryption of a file. Currently we support the encryption and decryption of text file (.txt), image file (.png, .jpg .bmp) or video file(.mp4, .avi). The files encrypted are named _encrypted_ and its suffix are the same as the plain text file. The files decrypted are named _decrypted_ and its suffix are also the same as its encrypted file. We also provided several sample files to encrypt and decrypt. Such files are located in the _Sample/_ folder. Encrypting and decrypting a file may be slow, so please be patience when doing so.
 
